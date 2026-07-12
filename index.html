@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GfredDream</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --deep:#0A1620; --panel:#101E2B; --panel2:#16283A; --line:#223244;
+    --brass:#C9975A; --brass-dim:#8A6530;
+    --o2green:#3FAE58; --warn:#E0932E; --danger:#E14444;
+    --mist:#D4DEE6; --mist-dim:#6C7C8A;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --disp:'Space Grotesk',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, #142B3E 0%, transparent 60%),
+      var(--deep);
+    color:var(--mist);
+    font-family:var(--disp);
+    min-height:100vh;
+    padding-bottom:48px;
+  }
+  a{color:inherit;}
+  .wrap{max-width:560px;margin:0 auto;padding:0 18px;}
+
+  /* ── header ─────────────────────────────────────────── */
+  header{
+    position:sticky; top:0; z-index:10;
+    background:rgba(10,22,32,.92); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .headrow{
+    max-width:560px;margin:0 auto;padding:16px 18px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand svg{width:26px;height:26px;flex:none;}
+  .brand-text{font-weight:700;letter-spacing:.06em;font-size:15px;}
+  .brand-sub{display:block;font-family:var(--mono);font-weight:400;font-size:10px;color:var(--mist-dim);letter-spacing:.08em;margin-top:1px;}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--mist-dim);flex:none;transition:background .3s,box-shadow .3s;}
+  .status-dot.up{background:var(--o2green);box-shadow:0 0 8px var(--o2green);}
+  .status-dot.busy{background:var(--brass);animation:pulse 1s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .btn{
+    font-family:var(--disp);font-weight:600;font-size:13px;letter-spacing:.02em;
+    border:1px solid var(--line); background:var(--panel2); color:var(--mist);
+    padding:9px 14px;border-radius:8px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:8px;
+    transition:border-color .15s, background .15s;
+  }
+  .btn:hover{border-color:var(--brass-dim);}
+  .btn:focus-visible{outline:2px solid var(--brass);outline-offset:2px;}
+  .btn.primary{background:var(--brass);border-color:var(--brass);color:#1A1206;}
+  .btn.primary:hover{background:#D9A968;}
+  .btn.ghost{background:transparent;}
+  .btn.danger{border-color:#5A2323;color:#F0A6A6;}
+  .btn.danger:hover{border-color:var(--danger);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  /* ── layout ─────────────────────────────────────────── */
+  section{padding:26px 0 8px;}
+  .eyebrow{
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--brass);
+    text-transform:uppercase;margin:0 0 4px;
+  }
+  h2{font-size:17px;margin:0 0 14px;font-weight:600;color:var(--mist);}
+  .hint{font-size:12.5px;color:var(--mist-dim);line-height:1.5;margin:-8px 0 16px;}
+  .card{
+    background:linear-gradient(180deg,var(--panel2),var(--panel));
+    border:1px solid var(--line); border-radius:14px; padding:18px;
+    margin-bottom:12px;
+  }
+  .divider{height:1px;background:var(--line);margin:28px 0 0;}
+
+  /* ── connect empty state ────────────────────────────── */
+  .connect-card{
+    text-align:center;padding:34px 20px;
+  }
+  .connect-card p{color:var(--mist-dim);font-size:13.5px;line-height:1.6;max-width:38ch;margin:10px auto 20px;}
+  .unsupported{border-color:#5A2323;}
+  .unsupported .eyebrow{color:var(--danger);}
+
+  /* ── live control rows ──────────────────────────────── */
+  .ctrl{margin-bottom:22px;}
+  .ctrl:last-child{margin-bottom:0;}
+  .ctrl-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;}
+  .ctrl-label{font-size:13.5px;font-weight:600;color:var(--mist);}
+  .ctrl-value{font-family:var(--mono);font-size:15px;color:var(--brass);font-variant-numeric:tabular-nums;}
+  input[type=range]{
+    -webkit-appearance:none;width:100%;height:4px;border-radius:2px;
+    background:var(--line);outline:none;margin:6px 0;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+    background:var(--brass);border:3px solid var(--deep);box-shadow:0 0 0 1px var(--brass);
+    cursor:pointer;margin-top:-8px;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;background:var(--brass);
+    border:3px solid var(--deep);box-shadow:0 0 0 1px var(--brass);cursor:pointer;
+  }
+  input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--line);}
+  input[type=range]:focus-visible::-webkit-slider-thumb{outline:2px solid var(--mist);}
+  .presets{display:flex;gap:8px;margin-top:10px;}
+  .preset-btn{
+    font-family:var(--mono);font-size:12px;font-weight:500;
+    border:1px solid var(--line);background:var(--panel);color:var(--mist-dim);
+    padding:6px 11px;border-radius:20px;cursor:pointer;transition:.15s;
+  }
+  .preset-btn:hover{color:var(--mist);border-color:var(--brass-dim);}
+  .preset-btn:focus-visible{outline:2px solid var(--brass);}
+
+  /* ── telemetry ──────────────────────────────────────── */
+  .telem{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;}
+  .telem-cell{
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:12px 10px;text-align:center;
+  }
+  .telem-cell .num{font-family:var(--mono);font-size:19px;color:var(--mist);font-variant-numeric:tabular-nums;}
+  .telem-cell .lbl{font-size:10px;color:var(--mist-dim);letter-spacing:.06em;text-transform:uppercase;margin-top:3px;}
+  .dot-row{display:flex;gap:6px;justify-content:center;margin-top:5px;}
+  .cdot{width:7px;height:7px;border-radius:50%;background:var(--line);}
+  .cdot.ok{background:var(--o2green);}
+
+  /* ── capacity bars (cells + scrubber, shared language) ─ */
+  .cap-row{display:flex;align-items:center;gap:12px;}
+  .cap-track{
+    flex:1;height:10px;border-radius:6px;background:var(--line);overflow:hidden;
+    position:relative;
+  }
+  .cap-fill{height:100%;border-radius:6px;transition:width .4s ease, background .4s ease;}
+  .cap-fill.ok{background:var(--o2green);}
+  .cap-fill.warn{background:var(--warn);}
+  .cap-fill.danger{background:var(--danger);animation:blinkbar 1s step-start infinite;}
+  @keyframes blinkbar{50%{opacity:.35;}}
+  .cap-days{font-family:var(--mono);font-size:12.5px;min-width:64px;text-align:right;color:var(--mist-dim);}
+  .cap-days.warn{color:var(--warn);}
+  .cap-days.danger{color:var(--danger);}
+
+  .cell-card{display:flex;flex-direction:column;gap:10px;}
+  .cell-head{display:flex;align-items:center;justify-content:space-between;}
+  .cell-name{font-size:13.5px;font-weight:600;}
+  .date-field{
+    font-family:var(--mono);font-size:13px;background:var(--panel);
+    border:1px solid var(--line);color:var(--mist);border-radius:8px;padding:8px 10px;
+    width:100%;
+  }
+  .date-field:focus-visible{outline:2px solid var(--brass);}
+  .field-lbl{font-size:11px;color:var(--mist-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;display:block;}
+
+  /* ── scrubber canister signature visual ────────────────*/
+  .scrub-layout{display:flex;gap:18px;align-items:center;}
+  .canister-wrap{flex:none;width:74px;}
+  .canister-wrap svg{width:100%;display:block;}
+  .scrub-info{flex:1;min-width:0;}
+  .scrub-remain{font-family:var(--mono);font-size:26px;color:var(--mist);font-variant-numeric:tabular-nums;}
+  .scrub-remain.warn{color:var(--warn);}
+  .scrub-remain.danger{color:var(--danger);}
+  .scrub-sub{font-size:11.5px;color:var(--mist-dim);margin-top:2px;}
+  .slots{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:16px;}
+  .slot{display:flex;flex-direction:column;gap:4px;}
+  .slot label{font-family:var(--mono);font-size:9.5px;color:var(--mist-dim);text-align:center;letter-spacing:.04em;}
+  .slot input{
+    font-family:var(--mono);font-size:13px;text-align:center;
+    background:var(--panel);border:1px solid var(--line);color:var(--mist);
+    border-radius:7px;padding:7px 2px;width:100%;min-width:0;
+  }
+  .slot input:focus-visible{outline:2px solid var(--brass);}
+  .row-end{display:flex;justify-content:flex-end;margin-top:14px;}
+
+  footer{max-width:560px;margin:34px auto 0;padding:0 18px;font-size:11px;color:var(--mist-dim);line-height:1.6;}
+  footer b{color:var(--mist);}
+
+  @media(max-width:400px){
+    .scrub-layout{flex-direction:column;align-items:stretch;}
+    .canister-wrap{width:56px;margin:0 auto;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .status-dot.busy{animation:none;}
+    .cap-fill.danger{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="headrow">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" stroke="var(--brass)" stroke-width="2"/><path d="M16 8v16M9 13l7-5 7 5M9 19l7 5 7-5" stroke="var(--brass)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>
+        <span class="brand-text">GFREDDREAM</span>
+        <span class="brand-sub" id="subStatus">déconnecté</span>
+      </span>
+    </div>
+    <button class="btn" id="connectBtn"><span class="status-dot" id="statusDot"></span><span id="connectLabel">Connecter</span></button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ═══ CONNEXION ═══ -->
+  <section id="connectSection">
+    <div class="card connect-card" id="connectCard">
+      <div class="eyebrow">Bluetooth</div>
+      <h2>Relie ton GfredDream</h2>
+      <p>Ouvre le capot Bluetooth de l'appareil, puis appuie sur Connecter. Réglages FiO2 et luminosité en direct une fois relié.</p>
+      <button class="btn primary" id="connectBtn2">Connecter via Bluetooth</button>
+    </div>
+  </section>
+
+  <!-- ═══ RÉGLAGES (live BLE) ═══ -->
+  <section id="liveSection" hidden>
+    <div class="eyebrow">Sur l'appareil — en direct</div>
+    <h2>Réglages</h2>
+
+    <div class="card">
+      <div class="ctrl">
+        <div class="ctrl-top">
+          <span class="ctrl-label">FiO2 de référence</span>
+          <span class="ctrl-value"><span id="fio2Val">0.98</span> bar</span>
+        </div>
+        <input type="range" id="fio2Slider" min="0.20" max="1.00" step="0.01" value="0.98" aria-label="FiO2 de référence, de 0.20 à 1.00 bar">
+        <div class="presets">
+          <button class="preset-btn" data-fio2="0.21">Air · 0.21</button>
+          <button class="preset-btn" data-fio2="0.98">O2 pur · 0.98</button>
+        </div>
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-top">
+          <span class="ctrl-label">Luminosité écran</span>
+          <span class="ctrl-value"><span id="britVal">100</span>%</span>
+        </div>
+        <input type="range" id="britSlider" min="0" max="100" step="1" value="100" aria-label="Luminosité écran, de 0 à 100 pourcent">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-top">
+          <span class="ctrl-label">Luminosité LED HUD</span>
+          <span class="ctrl-value"><span id="hudbrtVal">100</span>%</span>
+        </div>
+        <input type="range" id="hudbrtSlider" min="0" max="100" step="1" value="100" aria-label="Luminosité LED HUD, de 0 à 100 pourcent">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ctrl-label" style="margin-bottom:12px;">État de l'appareil</div>
+      <div class="telem">
+        <div class="telem-cell">
+          <div class="num" id="battVal">—</div>
+          <div class="lbl">Batterie</div>
+        </div>
+        <div class="telem-cell">
+          <div class="num" id="battVoltVal">—</div>
+          <div class="lbl">Volts</div>
+        </div>
+        <div class="telem-cell">
+          <div class="num" id="cellVal">—</div>
+          <div class="lbl">C1 / C2 mV</div>
+        </div>
+        <div class="telem-cell">
+          <div class="num" style="font-size:13px;padding-top:3px;">Calib.</div>
+          <div class="dot-row"><span class="cdot" id="calibDot1"></span><span class="cdot" id="calibDot2"></span></div>
+          <div class="lbl">C1 · C2</div>
+        </div>
+      </div>
+      <p class="hint" style="margin:12px 0 0;">Calib. vert = une calibration est enregistrée pour cette cellule (pas d'indicateur de péremption pour l'instant).</p>
+    </div>
+
+    <div class="row-end">
+      <button class="btn danger" id="resetBtn">Réinitialiser (FiO2 0.98 + luminosités 100%)</button>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═══ CELLULE O2 (local, sans lien BLE) ═══ -->
+  <section>
+    <div class="eyebrow">En local sur ce téléphone — sans lien avec le GfredDream</div>
+    <h2>Cellule O2</h2>
+    <p class="hint">Philosophie rEvo : une cellule changée tous les 6 mois. Encode la date de la dernière cellule posée, la page calcule l'échéance. Rien n'est envoyé à l'appareil.</p>
+
+    <div class="card cell-card" id="cellCard1">
+      <div>
+        <span class="field-lbl">Dernière cellule posée le</span>
+        <input type="date" class="date-field" id="cell1Date">
+      </div>
+      <div class="cap-row">
+        <div class="cap-track"><div class="cap-fill" id="cell1Fill"></div></div>
+        <span class="cap-days" id="cell1Days">—</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═══ CHAUX / SCRUBBER (local, sans lien BLE) ═══ -->
+  <section>
+    <div class="eyebrow">En local sur ce téléphone — sans lien avec le GfredDream</div>
+    <h2>Chaux (sofnolime)</h2>
+    <p class="hint">Cartouche neuve = 3h00. Encode les minutes de chaque plongée dans les cases ci-dessous.</p>
+
+    <div class="card">
+      <div class="scrub-layout">
+        <div class="canister-wrap">
+          <svg viewBox="0 0 60 140" aria-hidden="true">
+            <rect x="8" y="6" width="44" height="10" rx="3" fill="var(--line)"/>
+            <rect x="16" y="0" width="28" height="8" rx="2" fill="var(--line)"/>
+            <rect x="4" y="14" width="52" height="122" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+            <clipPath id="canClip"><rect x="7" y="17" width="46" height="116" rx="6"/></clipPath>
+            <rect id="canisterFill" x="7" width="46" height="116" y="17" fill="var(--o2green)" clip-path="url(#canClip)"/>
+            <rect x="4" y="14" width="52" height="122" rx="8" fill="none" stroke="var(--line)" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="scrub-info">
+          <div class="scrub-remain" id="scrubRemain">3h00</div>
+          <div class="scrub-sub" id="scrubSub">restant sur 3h00</div>
+        </div>
+      </div>
+
+      <div class="slots">
+        <div class="slot"><label>Plgée 1</label><input type="number" min="0" max="300" inputmode="numeric" data-slot="0" placeholder="0"></div>
+        <div class="slot"><label>Plgée 2</label><input type="number" min="0" max="300" inputmode="numeric" data-slot="1" placeholder="0"></div>
+        <div class="slot"><label>Plgée 3</label><input type="number" min="0" max="300" inputmode="numeric" data-slot="2" placeholder="0"></div>
+        <div class="slot"><label>Plgée 4</label><input type="number" min="0" max="300" inputmode="numeric" data-slot="3" placeholder="0"></div>
+        <div class="slot"><label>Plgée 5</label><input type="number" min="0" max="300" inputmode="numeric" data-slot="4" placeholder="0"></div>
+      </div>
+
+      <div class="row-end">
+        <button class="btn ghost" id="newCartridgeBtn">Nouvelle cartouche</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Bluetooth :</b> fonctionne dans Chrome (Android/desktop). Safari et iOS ne supportent pas Web Bluetooth.<br>
+    <b>Cellules/chaux :</b> stockées uniquement dans ce navigateur (localStorage) — changer de téléphone ou vider les données du site les efface.</p>
+  </footer>
+
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ── UUIDs — doivent matcher ble_service.h exactement ──────────────
+  const SVC   = '12340000-0000-0000-0000-000000000000';
+  const FIO2  = '12340002-0000-0000-0000-000000000000';
+  const BRIT  = '12340004-0000-0000-0000-000000000000';
+  const BATT  = '12340006-0000-0000-0000-000000000000';
+  const CELL  = '12340007-0000-0000-0000-000000000000';
+  const CALIB = '12340008-0000-0000-0000-000000000000';
+  const RESET = '12340009-0000-0000-0000-000000000000';
+  const HUDBRT= '1234000b-0000-0000-0000-000000000000';
+
+  let chars = {};
+  let device = null;
+  let suppressFio2Echo = false, suppressBritEcho = false, suppressHudEcho = false;
+
+  const $ = id => document.getElementById(id);
+  const statusDot = $('statusDot'), subStatus = $('subStatus'), connectLabel = $('connectLabel');
+
+  function setStatus(state, label){
+    statusDot.className = 'status-dot' + (state ? ' ' + state : '');
+    subStatus.textContent = label;
+  }
+
+  // ── Web Bluetooth support check ────────────────────────────────────
+  if (!navigator.bluetooth) {
+    $('connectCard').classList.add('unsupported');
+    $('connectCard').querySelector('.eyebrow').textContent = 'Bluetooth indisponible';
+    $('connectCard').querySelector('h2').textContent = 'Ce navigateur ne supporte pas Web Bluetooth';
+    $('connectCard').querySelector('p').textContent = 'Ouvre cette page dans Chrome (Android ou ordinateur). Safari et les navigateurs iOS ne peuvent pas parler en Bluetooth à une page web.';
+    $('connectBtn2').remove();
+    $('connectBtn').disabled = true;
+  }
+
+  async function connect(){
+    try {
+      setStatus('busy', 'connexion…');
+      device = await navigator.bluetooth.requestDevice({
+        filters: [{ services: [SVC] }]
+      });
+      device.addEventListener('gattserverdisconnected', onDisconnected);
+      const server = await device.gatt.connect();
+      const service = await server.getPrimaryService(SVC);
+
+      chars.fio2  = await service.getCharacteristic(FIO2);
+      chars.brit  = await service.getCharacteristic(BRIT);
+      chars.hudbrt= await service.getCharacteristic(HUDBRT);
+      chars.batt  = await service.getCharacteristic(BATT);
+      chars.cell  = await service.getCharacteristic(CELL);
+      chars.calib = await service.getCharacteristic(CALIB);
+      chars.reset = await service.getCharacteristic(RESET);
+
+      await readAll();
+      await chars.batt.startNotifications();
+      chars.batt.addEventListener('characteristicvaluechanged', e => renderBatt(e.target.value));
+      await chars.cell.startNotifications();
+      chars.cell.addEventListener('characteristicvaluechanged', e => renderCell(e.target.value));
+
+      setStatus('up', device.name || 'connecté');
+      connectLabel.textContent = 'Déconnecter';
+      $('connectSection').hidden = true;
+      $('liveSection').hidden = false;
+    } catch (err) {
+      console.error(err);
+      setStatus('', 'déconnecté');
+      connectLabel.textContent = 'Connecter';
+      if (err.name !== 'NotFoundError') alert('Connexion impossible : ' + err.message);
+    }
+  }
+
+  function onDisconnected(){
+    setStatus('', 'déconnecté');
+    connectLabel.textContent = 'Connecter';
+    $('connectSection').hidden = false;
+    $('liveSection').hidden = true;
+    chars = {};
+  }
+
+  async function disconnect(){
+    if (device && device.gatt.connected) device.gatt.disconnect();
+    onDisconnected();
+  }
+
+  $('connectBtn').addEventListener('click', () => {
+    if (device && device.gatt.connected) disconnect(); else connect();
+  });
+  $('connectBtn2').addEventListener('click', connect);
+
+  // ── read + render current state ─────────────────────────────────
+  async function readAll(){
+    const fio2v = await chars.fio2.readValue();
+    renderFio2(fio2v);
+    const britv = await chars.brit.readValue();
+    renderBrit(britv);
+    const hudv = await chars.hudbrt.readValue();
+    renderHud(hudv);
+    const battv = await chars.batt.readValue();
+    renderBatt(battv);
+    const cellv = await chars.cell.readValue();
+    renderCell(cellv);
+    const calibv = await chars.calib.readValue();
+    renderCalib(calibv);
+  }
+
+  function renderFio2(dv){
+    const raw = dv.getUint16(0, true);
+    const bar = raw / 10000;
+    suppressFio2Echo = true;
+    $('fio2Slider').value = bar;
+    $('fio2Val').textContent = bar.toFixed(2);
+    suppressFio2Echo = false;
+  }
+  function renderBrit(dv){
+    const v = dv.getUint8(0);
+    suppressBritEcho = true;
+    $('britSlider').value = v;
+    $('britVal').textContent = v;
+    suppressBritEcho = false;
+  }
+  function renderHud(dv){
+    const v = dv.getUint8(0);
+    suppressHudEcho = true;
+    $('hudbrtSlider').value = v;
+    $('hudbrtVal').textContent = v;
+    suppressHudEcho = false;
+  }
+  function renderBatt(dv){
+    $('battVal').textContent = dv.getUint8(0) + '%';
+    if (dv.byteLength >= 3) {
+      const volts = dv.getUint16(1, true) / 100;
+      $('battVoltVal').textContent = volts.toFixed(2) + 'V';
+    }
+  }
+  function renderCell(dv){
+    const c1 = dv.getInt16(0, true) / 10, c2 = dv.getInt16(2, true) / 10;
+    $('cellVal').textContent = c1.toFixed(1) + ' / ' + c2.toFixed(1);
+  }
+  function renderCalib(dv){
+    const b = dv.getUint8(0);
+    $('calibDot1').classList.toggle('ok', !!(b & 0x01));
+    $('calibDot2').classList.toggle('ok', !!(b & 0x02));
+  }
+
+  // ── write on user interaction (debounced while dragging) ─────────
+  function debounce(fn, ms){
+    let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+  }
+
+  const writeFio2 = debounce(async (bar) => {
+    if (!chars.fio2) return;
+    const raw = Math.round(bar * 10000);
+    const buf = new ArrayBuffer(2); new DataView(buf).setUint16(0, raw, true);
+    await chars.fio2.writeValue(buf);
+  }, 250);
+  const writeBrit = debounce(async (v) => {
+    if (!chars.brit) return;
+    await chars.brit.writeValue(Uint8Array.of(v));
+  }, 200);
+  const writeHud = debounce(async (v) => {
+    if (!chars.hudbrt) return;
+    await chars.hudbrt.writeValue(Uint8Array.of(v));
+  }, 200);
+
+  $('fio2Slider').addEventListener('input', e => {
+    if (suppressFio2Echo) return;
+    const bar = parseFloat(e.target.value);
+    $('fio2Val').textContent = bar.toFixed(2);
+    writeFio2(bar);
+  });
+  document.querySelectorAll('[data-fio2]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const bar = parseFloat(btn.dataset.fio2);
+      $('fio2Slider').value = bar;
+      $('fio2Val').textContent = bar.toFixed(2);
+      writeFio2(bar);
+    });
+  });
+  $('britSlider').addEventListener('input', e => {
+    if (suppressBritEcho) return;
+    const v = parseInt(e.target.value, 10);
+    $('britVal').textContent = v;
+    writeBrit(v);
+  });
+  $('hudbrtSlider').addEventListener('input', e => {
+    if (suppressHudEcho) return;
+    const v = parseInt(e.target.value, 10);
+    $('hudbrtVal').textContent = v;
+    writeHud(v);
+  });
+  $('resetBtn').addEventListener('click', async () => {
+    if (!chars.reset) return;
+    if (!confirm('Remettre FiO2 à 0.98 et les 2 luminosités à 100% ?')) return;
+    await chars.reset.writeValue(Uint8Array.of(0xAA));
+    setTimeout(readAll, 300);
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  //  CELLULES O2 — 100% local, aucun lien BLE
+  // ═══════════════════════════════════════════════════════════════
+  const CELL_LIFE_DAYS = 180; // ~6 mois
+
+  function loadCellDate(n){ return localStorage.getItem('gfd_cell' + n + '_date') || ''; }
+  function saveCellDate(n, v){ localStorage.setItem('gfd_cell' + n + '_date', v); }
+
+  function renderCellStatus(n){
+    const dateStr = $('cell' + n + 'Date').value;
+    const fill = $('cell' + n + 'Fill'), daysEl = $('cell' + n + 'Days');
+    if (!dateStr) { fill.style.width = '0%'; fill.className = 'cap-fill'; daysEl.textContent = '—'; daysEl.className = 'cap-days'; return; }
+    const installed = new Date(dateStr + 'T00:00:00');
+    const due = new Date(installed.getTime() + CELL_LIFE_DAYS * 86400000);
+    const daysLeft = Math.ceil((due - new Date()) / 86400000);
+    const pct = Math.max(0, Math.min(100, (daysLeft / CELL_LIFE_DAYS) * 100));
+    let cls = 'ok';
+    if (daysLeft < 0) cls = 'danger';
+    else if (daysLeft <= 15) cls = 'warn';
+    fill.style.width = pct + '%';
+    fill.className = 'cap-fill ' + cls;
+    daysEl.className = 'cap-days ' + (cls === 'ok' ? '' : cls);
+    daysEl.textContent = daysLeft < 0 ? ('dépassé ' + Math.abs(daysLeft) + 'j') : (daysLeft + 'j restants');
+  }
+
+  [1].forEach(n => {
+    const input = $('cell' + n + 'Date');
+    input.value = loadCellDate(n);
+    renderCellStatus(n);
+    input.addEventListener('change', () => { saveCellDate(n, input.value); renderCellStatus(n); });
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  //  CHAUX / SCRUBBER — 100% local, aucun lien BLE
+  // ═══════════════════════════════════════════════════════════════
+  const SCRUB_BUDGET_MIN = 180; // 3h00 par cartouche neuve
+
+  function loadSlots(){
+    try { return JSON.parse(localStorage.getItem('gfd_scrub_slots')) || [0,0,0,0,0]; }
+    catch { return [0,0,0,0,0]; }
+  }
+  function saveSlots(slots){ localStorage.setItem('gfd_scrub_slots', JSON.stringify(slots)); }
+
+  function renderScrub(){
+    const slots = loadSlots();
+    document.querySelectorAll('[data-slot]').forEach(inp => {
+      inp.value = slots[+inp.dataset.slot] || '';
+    });
+    const used = slots.reduce((a,b) => a + (parseInt(b,10) || 0), 0);
+    const remain = Math.max(0, SCRUB_BUDGET_MIN - used);
+    const h = Math.floor(remain / 60), m = remain % 60;
+    const remainStr = h + 'h' + String(m).padStart(2,'0');
+    let cls = 'ok';
+    if (remain < 30) cls = 'danger';
+    else if (remain < 60) cls = 'warn';
+
+    $('scrubRemain').textContent = remainStr;
+    $('scrubRemain').className = 'scrub-remain ' + (cls === 'ok' ? '' : cls);
+    $('scrubSub').textContent = 'restant sur 3h00 (' + used + ' min utilisées)';
+
+    const pct = Math.max(0, Math.min(1, remain / SCRUB_BUDGET_MIN));
+    const totalH = 116, fillH = totalH * pct;
+    const canFill = $('canisterFill');
+    canFill.setAttribute('height', fillH);
+    canFill.setAttribute('y', 17 + (totalH - fillH));
+    canFill.setAttribute('fill',
+      cls === 'danger' ? 'var(--danger)' : cls === 'warn' ? 'var(--warn)' : 'var(--o2green)');
+    if (cls === 'danger') canFill.style.animation = 'blinkbar 1s step-start infinite';
+    else canFill.style.animation = '';
+  }
+
+  document.querySelectorAll('[data-slot]').forEach(inp => {
+    inp.addEventListener('change', () => {
+      const slots = loadSlots();
+      slots[+inp.dataset.slot] = Math.max(0, parseInt(inp.value, 10) || 0);
+      saveSlots(slots);
+      renderScrub();
+    });
+  });
+  $('newCartridgeBtn').addEventListener('click', () => {
+    if (!confirm('Nouvelle cartouche de chaux — remettre les 5 cases à zéro ?')) return;
+    saveSlots([0,0,0,0,0]);
+    renderScrub();
+  });
+
+  renderScrub();
+})();
+</script>
+</body>
+</html>
