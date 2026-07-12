@@ -165,6 +165,21 @@
   .scrub-remain.danger{color:var(--danger);}
   .scrub-sub{font-size:11.5px;color:var(--mist-dim);margin-top:2px;}
   .slots{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:16px;}
+
+  /* ── mémo batteries ─────────────────────────────────────────── */
+  .memo-row{
+    display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+    padding:11px 0; border-bottom:1px solid var(--line);
+  }
+  .memo-row:last-child{border-bottom:none; padding-bottom:0;}
+  .memo-row:first-child{padding-top:0;}
+  .memo-name{font-size:13.5px; font-weight:600; color:var(--mist); flex:1;}
+  .memo-spec{font-family:var(--mono); font-size:11.5px; color:var(--mist-dim); flex:1.3; text-align:left;}
+  .memo-min{font-family:var(--mono); font-size:12px; color:var(--brass); text-align:right; flex:none; line-height:1.4;}
+  @media(max-width:420px){
+    .memo-row{flex-wrap:wrap;}
+    .memo-min{margin-left:auto;}
+  }
   .slot{display:flex;flex-direction:column;gap:4px;}
   .slot label{font-family:var(--mono);font-size:9.5px;color:var(--mist-dim);text-align:center;letter-spacing:.04em;}
   .slot input{
@@ -359,9 +374,36 @@
     </div>
   </section>
 
+  <div class="divider"></div>
+
+  <!-- ═══ MÉMO BATTERIES (local, sans lien BLE, purement informatif) ═══ -->
+  <section>
+    <div class="eyebrow">Pense-bête — pas de lien avec le GfredDream</div>
+    <h2>Batteries à vérifier</h2>
+    <p class="hint">Repris de ta plaquette de contrôle perso.</p>
+
+    <div class="card">
+      <div class="memo-row">
+        <div class="memo-name">Shearwater (primaire)</div>
+        <div class="memo-spec">Saft LS14500, 3,6V Lithium</div>
+        <div class="memo-min">min. <b>3.3 V</b></div>
+      </div>
+      <div class="memo-row">
+        <div class="memo-name">Solénoïde</div>
+        <div class="memo-spec">Duracell, pile 9V Plus</div>
+        <div class="memo-min">min. <b>6.5 V</b></div>
+      </div>
+      <div class="memo-row">
+        <div class="memo-name">Revodream (primaire)</div>
+        <div class="memo-spec">Duracell CR2450 ×2</div>
+        <div class="memo-min">pas d'indication précise —<br>⚠️ si T &lt; 12°C</div>
+      </div>
+    </div>
+  </section>
+
   <footer>
     <p><b>Bluetooth :</b> fonctionne dans Chrome (Android/desktop). Safari et iOS ne supportent pas Web Bluetooth.<br>
-    <b>Cellules/chaux :</b> stockées uniquement dans ce navigateur (localStorage) — changer de téléphone ou vider les données du site les efface.</p>
+    <b>Cellules/chaux/batteries :</b> stockées uniquement dans ce navigateur (localStorage) — changer de téléphone ou vider les données du site les efface.</p>
   </footer>
 
 </div>
