@@ -301,6 +301,26 @@
 
   <div class="divider"></div>
 
+  <!-- ═══ CHECK 1.6 BAR (local, sans lien BLE) ═══ -->
+  <section>
+    <div class="eyebrow">En local sur ce téléphone — sans lien avec le GfredDream</div>
+    <h2>Check cellules à 1.60</h2>
+    <p class="hint">Rinçage O2 à 7m, vérif. 1.60 bar. Rappel pour le refaire au moins une fois par mois.</p>
+
+    <div class="card cell-card" id="checkCard">
+      <div>
+        <span class="field-lbl">Dernier check le</span>
+        <input type="date" class="date-field" id="check16Date">
+      </div>
+      <div class="cap-row">
+        <div class="cap-track"><div class="cap-fill" id="check16Fill"></div></div>
+        <span class="cap-days" id="check16Days">—</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
   <!-- ═══ CHAUX / SCRUBBER (local, sans lien BLE) ═══ -->
   <section>
     <div class="eyebrow">En local sur ce téléphone — sans lien avec le GfredDream</div>
@@ -551,35 +571,46 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
-  //  CELLULES O2 — 100% local, aucun lien BLE
+  //  Compteurs à date — 100% local, aucun lien BLE. Même logique pour
+  //  la cellule O2 (180j) et le rappel check 1.60 (30j).
   // ═══════════════════════════════════════════════════════════════
-  const CELL_LIFE_DAYS = 180; // ~6 mois
+  function initCountdown(opts){
+    const { storageKey, dateInputId, fillId, daysId, cycleDays, warnDays } = opts;
+    const input = $(dateInputId);
+    const load = () => localStorage.getItem(storageKey) || '';
+    const save = v => localStorage.setItem(storageKey, v);
 
-  function loadCellDate(n){ return localStorage.getItem('gfd_cell' + n + '_date') || ''; }
-  function saveCellDate(n, v){ localStorage.setItem('gfd_cell' + n + '_date', v); }
+    function render(){
+      const dateStr = input.value;
+      const fill = $(fillId), daysEl = $(daysId);
+      if (!dateStr) { fill.style.width = '0%'; fill.className = 'cap-fill'; daysEl.textContent = '—'; daysEl.className = 'cap-days'; return; }
+      const start = new Date(dateStr + 'T00:00:00');
+      const due = new Date(start.getTime() + cycleDays * 86400000);
+      const daysLeft = Math.ceil((due - new Date()) / 86400000);
+      const pct = Math.max(0, Math.min(100, (daysLeft / cycleDays) * 100));
+      let cls = 'ok';
+      if (daysLeft < 0) cls = 'danger';
+      else if (daysLeft <= warnDays) cls = 'warn';
+      fill.style.width = pct + '%';
+      fill.className = 'cap-fill ' + cls;
+      daysEl.className = 'cap-days ' + (cls === 'ok' ? '' : cls);
+      daysEl.textContent = daysLeft < 0 ? ('dépassé ' + Math.abs(daysLeft) + 'j') : (daysLeft + 'j restants');
+    }
 
-  function renderCellStatus(n){
-    const dateStr = $('cell' + n + 'Date').value;
-    const fill = $('cell' + n + 'Fill'), daysEl = $('cell' + n + 'Days');
-    if (!dateStr) { fill.style.width = '0%'; fill.className = 'cap-fill'; daysEl.textContent = '—'; daysEl.className = 'cap-days'; return; }
-    const installed = new Date(dateStr + 'T00:00:00');
-    const due = new Date(installed.getTime() + CELL_LIFE_DAYS * 86400000);
-    const daysLeft = Math.ceil((due - new Date()) / 86400000);
-    const pct = Math.max(0, Math.min(100, (daysLeft / CELL_LIFE_DAYS) * 100));
-    let cls = 'ok';
-    if (daysLeft < 0) cls = 'danger';
-    else if (daysLeft <= 15) cls = 'warn';
-    fill.style.width = pct + '%';
-    fill.className = 'cap-fill ' + cls;
-    daysEl.className = 'cap-days ' + (cls === 'ok' ? '' : cls);
-    daysEl.textContent = daysLeft < 0 ? ('dépassé ' + Math.abs(daysLeft) + 'j') : (daysLeft + 'j restants');
+    input.value = load();
+    render();
+    input.addEventListener('change', () => { save(input.value); render(); });
   }
 
-  [1].forEach(n => {
-    const input = $('cell' + n + 'Date');
-    input.value = loadCellDate(n);
-    renderCellStatus(n);
-    input.addEventListener('change', () => { saveCellDate(n, input.value); renderCellStatus(n); });
+  initCountdown({
+    storageKey: 'gfd_cell1_date', dateInputId: 'cell1Date',
+    fillId: 'cell1Fill', daysId: 'cell1Days',
+    cycleDays: 180, warnDays: 15
+  });
+  initCountdown({
+    storageKey: 'gfd_check16_date', dateInputId: 'check16Date',
+    fillId: 'check16Fill', daysId: 'check16Days',
+    cycleDays: 30, warnDays: 5
   });
 
   // ═══════════════════════════════════════════════════════════════
