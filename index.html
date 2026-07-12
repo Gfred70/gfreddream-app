@@ -453,6 +453,7 @@
   }
 
   function renderFio2(dv){
+    if (dv.byteLength < 2) return;
     const raw = dv.getUint16(0, true);
     const bar = raw / 10000;
     suppressFio2Echo = true;
@@ -461,6 +462,7 @@
     suppressFio2Echo = false;
   }
   function renderBrit(dv){
+    if (dv.byteLength < 1) return;
     const v = dv.getUint8(0);
     suppressBritEcho = true;
     $('britSlider').value = v;
@@ -468,6 +470,7 @@
     suppressBritEcho = false;
   }
   function renderHud(dv){
+    if (dv.byteLength < 1) return;
     const v = dv.getUint8(0);
     suppressHudEcho = true;
     $('hudbrtSlider').value = v;
@@ -475,6 +478,7 @@
     suppressHudEcho = false;
   }
   function renderBatt(dv){
+    if (dv.byteLength < 1) return;
     $('battVal').textContent = dv.getUint8(0) + '%';
     if (dv.byteLength >= 3) {
       const volts = dv.getUint16(1, true) / 100;
@@ -482,10 +486,12 @@
     }
   }
   function renderCell(dv){
+    if (dv.byteLength < 4) return;
     const c1 = dv.getInt16(0, true) / 10, c2 = dv.getInt16(2, true) / 10;
     $('cellVal').textContent = c1.toFixed(1) + ' / ' + c2.toFixed(1);
   }
   function renderCalib(dv){
+    if (dv.byteLength < 1) return;
     const b = dv.getUint8(0);
     $('calibDot1').classList.toggle('ok', !!(b & 0x01));
     $('calibDot2').classList.toggle('ok', !!(b & 0x02));
