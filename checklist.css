@@ -124,8 +124,44 @@ h1{font-size:21px;margin:0 0 8px;font-weight:700;color:var(--mist);}
   background:transparent;
   border:1px dashed var(--brass-dim);
   cursor:default;
+  padding:0;
 }
 .steps li.final:hover{background:transparent;}
+.steps li.final a{
+  display:block;
+  padding:15px 16px;
+  color:var(--brass);
+  text-decoration:none;
+  transition:background .15s, border-color .15s;
+  border-radius:10px;
+}
+.steps li.final a:hover{background:rgba(201,151,90,.08);}
+
+.next-link{
+  display:block;
+  text-align:center;
+  font-family:var(--disp);
+  font-weight:700;
+  font-size:16px;
+  color:var(--brass);
+  text-decoration:none;
+  border:1px dashed var(--brass-dim);
+  border-radius:14px;
+  padding:16px;
+  margin:22px 0 0;
+  transition:background .15s, border-color .15s;
+}
+.next-link:hover{background:rgba(201,151,90,.08);}
+.next-link .next-sub{
+  display:block;
+  font-family:var(--mono);
+  font-size:10.5px;
+  font-weight:400;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--mist-dim);
+  margin-bottom:4px;
+}
 
 /* ── cards génériques (procédures d'urgence, etc.) ─────*/
 .card{
