@@ -37,40 +37,79 @@
   <div class="page-hero">
     <div class="eyebrow">6 / 6 — Ton boîtier maison</div>
     <h1>Procédure GfredDream</h1>
-    <p class="page-hint">⚠️ Brouillon reconstruit à partir du firmware — pas de fiche source pour cette page. À corriger/compléter.</p>
+    <p class="page-hint">D'après le manuel utilisateur v1 — firmware v4.6.6, juillet 2026.</p>
   </div>
 
   <div class="card">
-    <h2>Reed switch — un seul contact, pas de série de pushs</h2>
+    <h2>Séquence de démarrage (~7 s)</h2>
     <ul>
-      <li>Contrairement au rEvodream d'origine (1/3/4/6 pushs), le GfredDream pilote tout via le reed switch de calibration (IO2), en appui simple ou maintenu.</li>
-      <li>Déclenchement normal → ouvre l'écran de calibration CA1/CA2 (cellule 1 puis cellule 2).</li>
-      <li>Maintien 1 seconde depuis l'écran AL_DEAD → réaffiche l'écran de calibration CA1/CA2 sur place, pour te sortir d'une mauvaise calibration sans devoir rebooter l'appareil. Ce déclenchement est volontairement manuel, pour éviter une sortie automatique de AL_DEAD en cas de vraie urgence.</li>
+      <li><b>E1</b> — Logo GfredDream, ~2 s.</li>
+      <li><b>E2</b> — Numéro de version du firmware, ~2 s.</li>
+      <li><b>E3</b> — Check-cellules : vérifie que les 2 cellules sont dans une plage cohérente à l'air (8–13 mV), ~3 s. Cette plage est fixe, quel que soit le FiO2 configuré dans l'appli — ça suppose que tu démarres toujours à l'air avant le flush O2.</li>
+      <li><b>E4</b> — Écran de plongée, reste affiché en continu ensuite.</li>
+    </ul>
+    <p style="font-size:12.5px;color:var(--mist-dim);margin:10px 0 0;">Le WiFi se connecte déjà en arrière-plan pendant E1/E2/E3 (non-bloquant) ; le Bluetooth démarre juste après, une fois la tentative WiFi terminée (connectée ou non).</p>
+  </div>
+
+  <div class="card">
+    <h2>Écran principal (E4)</h2>
+    <ul>
+      <li><b>Voting</b> — PPO2 combinée : moyenne C1/C2 si les deux cellules sont valides, sinon la cellule restante seule.</li>
+      <li><b>Mode HUD</b> — « CCR », seul mode utilisé et exposé (le firmware garde en interne la logique pour 3 modes, hérités du cahier des charges d'origine, mais seul CCR est actif).</li>
+      <li><b>Batterie affichée</b> — celle du GfredDream, pas celle de ton rEvodream principal.</li>
+      <li><b>Indicateurs OTA / BTH</b> — gris = éteint, vert foncé = connecté, rouge = radios coupées (tension basse).</li>
+      <li><b>Cellule en échec (ERR)</b> — si une cellule sort de la plage attendue, son chiffre est remplacé par « ERR » en rouge, mais le Voting continue avec la cellule restante.</li>
+      <li>Hors zone sûre (&lt; 0,30 ou ≥ 1,55 bar), le chiffre géant de la cellule concernée pulse doucement en transparence, en plus du HUD.</li>
     </ul>
   </div>
 
   <div class="card">
-    <h2>Écran E3 — check cellules au démarrage</h2>
+    <h2>Zones PPO2 et HUD</h2>
     <ul>
-      <li>La plage de référence est fixe : 8–13 mV, quel que soit le FiO2 configuré dans l'appli.</li>
-      <li>Ça suppose que tu démarres toujours à l'air avant le flush O2 — comme sur ta fiche papier.</li>
+      <li><b>Hypoxie</b> (&lt; 0,50 bar) — rouge, rafale rapide : 3 flashs courts (129 ms ON / 121 ms OFF), pause 333 ms, cycle ≈ 962 ms.</li>
+      <li><b>Zone sûre</b> (0,50 – 1,25 bar) — verte fixe, sans clignotement. Entre 0,70 et 1,00 bar spécifiquement : 1 flash de 320 ms, période ≈ 1,89 s.</li>
+      <li><b>Silence</b> (1,25 – 1,40 bar) — aucune LED, pour éviter un clignotement permanent près du setpoint 1,30.</li>
+      <li><b>Hyperoxie</b> (≥ 1,40 bar) — rouge, 1 flash par cycle, même logique qu'en zone 0,70–1,00.</li>
     </ul>
+    <p style="font-size:12.5px;color:var(--mist-dim);margin:10px 0 0;">Seuils et rythmes mesurés directement sur le HUD rEvodream d'origine (vidéo ralentie), pas recopiés du manuel papier qui indiquait des durées imprécises.</p>
   </div>
 
   <div class="card">
-    <h2>Verrouillage batterie</h2>
+    <h2>Calibration</h2>
+    <p class="lead">Quand calibrer : après les 3 lavages O2 si la PPO2 diverge de l'instrument principal, après un changement de cellule, ou si le contrôle à 1,60 bar montre un écart inhabituel.</p>
     <ul>
-      <li>Moins de 3,70 V au démarrage, ou moins de 3,60 V en cours de fonctionnement → WiFi, OTA et Bluetooth désactivés automatiquement pour préserver l'autonomie.</li>
+      <li>1. Amène les cellules à l'oxygène pur (O2 à 1 bar), laisse stabiliser.</li>
+      <li>2. Maintiens le contact reed 1 seconde → l'écran CA1 apparaît (« STABILIZ... »).</li>
+      <li>3. GfredDream moyenne la lecture mV sur 3 secondes.</li>
+      <li>4. L'écran CA2 affiche le résultat : « OK » en vert pour chaque cellule calibrée avec succès.</li>
+      <li>5. Retour automatique à E4 après 2 secondes.</li>
     </ul>
+    <p style="font-size:12.5px;color:var(--mist-dim);margin:10px 0 0;">Plage acceptée : 36–64 mV à l'O2 pur (0,98), mise à l'échelle automatiquement selon ton FiO2 de référence (ex. air de banc à 0,21 → 7,7–13,7 mV).</p>
+    <p style="font-size:12.5px;color:var(--warn);margin:8px 0 0;">Verrou FiO2 : changer le FiO2 de référence après avoir calibré invalide automatiquement la calibration au redémarrage suivant — recalibration obligatoire avant d'afficher une PPO2 de nouveau.</p>
   </div>
 
   <div class="card danger">
-    <span class="tag">À valider avec toi</span>
-    <p class="lead">Cette page manque encore : la lecture des motifs de pulsation du HUD (rapide/2-pulse/1-pulse/court selon la zone PPO2), et tout ce que tu voudrais ajouter d'autre. Dis-moi ce qui manque ou ce qui est faux.</p>
+    <span class="tag">Urgence</span>
+    <h2 style="color:var(--danger);">Écran d'urgence</h2>
+    <p class="lead">Si les deux cellules sont simultanément hors plage cohérente, GfredDream cesse d'afficher une PPO2 et bascule sur un écran d'urgence explicite. Ça ne se déclenche jamais pour une seule cellule en échec (gérée en « ERR », voir écran principal).</p>
+    <ul>
+      <li>Reviens immédiatement sur ton instrument principal — GfredDream n'est qu'un second regard, plus fiable dans cet état.</li>
+      <li>Ne tente pas de recalibrer sous l'eau : remonte, vérifie le câblage/les cellules à la surface.</li>
+      <li>WiFi et Bluetooth restent actifs en arrière-plan même sur cet écran — un reflash OTA reste possible sans câble si besoin.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Batterie et recharge</h2>
+    <ul>
+      <li>Charge Qi QC3.0 à 9V obligatoire — un chargeur Qi standard (5V) ne suffit pas.</li>
+      <li>Recharge toujours GfredDream avant une mise à jour OTA, pour éviter toute coupure en cours de flash.</li>
+    </ul>
+    <p style="font-size:12.5px;color:var(--mist-dim);margin:10px 0 0;">Verrou radio : au démarrage, &lt; 3,70 V → WiFi/OTA/Bluetooth ne démarrent pas du tout. En cours de session, &lt; 3,60 V → WiFi et Bluetooth se coupent, l'écran de plongée continue normalement.</p>
   </div>
 
   <footer>
-    <p>Page de référence — pas de repère glissant ici.</p>
+    <p>Page de référence — pas de repère glissant ici. Contenu repris du manuel utilisateur v1 (firmware v4.6.6, juillet 2026).</p>
   </footer>
 
 </div>
