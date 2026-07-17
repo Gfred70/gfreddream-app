@@ -136,6 +136,24 @@
   .preset-btn:hover{color:var(--mist);border-color:var(--brass-dim);}
   .preset-btn:focus-visible{outline:2px solid var(--brass);}
 
+  /* ── stepper (réglage fin, ±1% par tap) ────────────────*/
+  .stepper-row{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:12px;}
+  .stepper-btn{
+    width:44px;height:44px;border-radius:10px;flex:none;
+    border:1px solid var(--line);background:var(--panel2);color:var(--mist);
+    font-family:var(--disp);font-size:22px;font-weight:700;line-height:1;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:border-color .15s, background .15s, color .15s;
+    -webkit-tap-highlight-color:transparent; user-select:none;
+  }
+  .stepper-btn:hover{border-color:var(--brass-dim);}
+  .stepper-btn:active{background:var(--brass);color:#1A1206;border-color:var(--brass);}
+  .stepper-btn:focus-visible{outline:2px solid var(--brass);outline-offset:2px;}
+  .stepper-hint{
+    font-family:var(--mono);font-size:11px;color:var(--mist-dim);
+    min-width:70px;text-align:center;
+  }
+
   /* ── telemetry ──────────────────────────────────────── */
   .telem{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;}
   .telem-cell{
@@ -319,6 +337,18 @@
           <span class="ctrl-value"><span id="hudbrtVal">100</span>%</span>
         </div>
         <input type="range" id="hudbrtSlider" min="0" max="100" step="1" value="100" aria-label="Luminosité LED HUD, de 0 à 100 pourcent">
+        <div class="stepper-row">
+          <button class="stepper-btn" id="hudbrtMinus" type="button" aria-label="Diminuer de 1 pourcent">−</button>
+          <div class="stepper-hint">1 tap = 1%</div>
+          <button class="stepper-btn" id="hudbrtPlus" type="button" aria-label="Augmenter de 1 pourcent">+</button>
+        </div>
+        <div class="presets">
+          <button class="preset-btn" data-hudbrt="1">1%</button>
+          <button class="preset-btn" data-hudbrt="2">2%</button>
+          <button class="preset-btn" data-hudbrt="3">3%</button>
+          <button class="preset-btn" data-hudbrt="5">5%</button>
+          <button class="preset-btn" data-hudbrt="10">10%</button>
+        </div>
       </div>
     </div>
 
@@ -655,9 +685,22 @@
   });
   $('hudbrtSlider').addEventListener('input', e => {
     if (suppressHudEcho) return;
-    const v = parseInt(e.target.value, 10);
+    setHud(parseInt(e.target.value, 10));
+  });
+  function setHud(v){
+    v = Math.max(0, Math.min(100, v));
+    $('hudbrtSlider').value = v;
     $('hudbrtVal').textContent = v;
     writeHud(v);
+  }
+  $('hudbrtMinus').addEventListener('click', () => {
+    setHud(parseInt($('hudbrtSlider').value, 10) - 1);
+  });
+  $('hudbrtPlus').addEventListener('click', () => {
+    setHud(parseInt($('hudbrtSlider').value, 10) + 1);
+  });
+  document.querySelectorAll('[data-hudbrt]').forEach(btn => {
+    btn.addEventListener('click', () => setHud(parseInt(btn.dataset.hudbrt, 10)));
   });
   $('resetBtn').addEventListener('click', async () => {
     if (!chars.reset) return;
