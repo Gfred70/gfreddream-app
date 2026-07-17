@@ -1,0 +1,159 @@
+/* ═══ GfredDream — checklists partagées ═══
+   Reprend les tokens de couleur/typo de l'appli principale (index.html) */
+:root{
+  --deep:#0A1620; --panel:#101E2B; --panel2:#16283A; --line:#223244;
+  --brass:#C9975A; --brass-dim:#8A6530;
+  --o2green:#3FAE58; --warn:#E0932E; --danger:#E14444;
+  --mist:#D4DEE6; --mist-dim:#6C7C8A;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --disp:'Space Grotesk',system-ui,sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(ellipse 900px 500px at 50% -10%, #142B3E 0%, transparent 60%),
+    var(--deep);
+  color:var(--mist);
+  font-family:var(--disp);
+  min-height:100vh;
+  padding-bottom:56px;
+}
+a{color:inherit;}
+.wrap{max-width:560px;margin:0 auto;padding:0 18px;}
+
+/* ── header ─────────────────────────────────────────── */
+header{
+  position:sticky; top:0; z-index:10;
+  background:rgba(10,22,32,.92); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.headrow{
+  max-width:560px;margin:0 auto;padding:16px 18px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand svg{width:32px;height:32px;flex:none;}
+.brand-text{font-weight:700;letter-spacing:.06em;font-size:15px;}
+.brand-sub{display:block;font-family:var(--mono);font-weight:400;font-size:10px;color:var(--mist-dim);letter-spacing:.08em;margin-top:1px;}
+.back-btn{
+  font-family:var(--disp);font-weight:600;font-size:13px;letter-spacing:.02em;
+  border:1px solid var(--line); background:var(--panel2); color:var(--mist);
+  padding:9px 14px;border-radius:8px;cursor:pointer;text-decoration:none;
+  display:inline-flex;align-items:center;gap:6px;
+  transition:border-color .15s, background .15s;
+}
+.back-btn:hover{border-color:var(--brass-dim);}
+
+/* ── page intro ─────────────────────────────────────── */
+.page-hero{padding:26px 0 6px;}
+.eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--brass);
+  text-transform:uppercase;margin:0 0 4px;
+}
+h1{font-size:21px;margin:0 0 8px;font-weight:700;color:var(--mist);}
+.page-hint{font-size:12.5px;color:var(--mist-dim);line-height:1.55;margin:0 0 4px;max-width:52ch;}
+
+/* ── barre de progression + reset ──────────────────────*/
+.progress-row{
+  display:flex;align-items:center;gap:12px;margin:18px 0 22px;
+}
+.progress-track{flex:1;height:6px;border-radius:4px;background:var(--line);overflow:hidden;}
+.progress-fill{height:100%;width:0%;background:var(--brass);border-radius:4px;transition:width .25s ease;}
+.reset-btn{
+  font-family:var(--mono);font-size:11.5px;font-weight:500;white-space:nowrap;
+  border:1px solid var(--line);background:transparent;color:var(--mist-dim);
+  padding:7px 12px;border-radius:20px;cursor:pointer;transition:.15s;
+}
+.reset-btn:hover{color:var(--mist);border-color:var(--brass-dim);}
+
+/* ── liste d'étapes avec repère glissant ───────────────*/
+.steps{list-style:none;margin:0 0 8px;padding:0;}
+.steps li.step{
+  position:relative;
+  padding:13px 16px 13px 18px;
+  margin-bottom:7px;
+  border-radius:11px;
+  border:1px solid var(--line);
+  background:var(--panel);
+  font-size:14.5px;
+  line-height:1.45;
+  cursor:pointer;
+  transition:background .15s, border-color .15s, opacity .15s, transform .1s;
+  border-left:3px solid transparent;
+}
+.steps li.step:active{transform:scale(.99);}
+.steps li.step.done{
+  opacity:.42;
+  border-left-color:var(--line);
+}
+.steps li.step.current{
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-color:var(--brass-dim);
+  border-left-color:var(--brass);
+  box-shadow:0 0 0 1px rgba(201,151,90,.15), 0 4px 18px -6px rgba(201,151,90,.35);
+  font-weight:600;
+  color:#fff;
+}
+.steps li.step.current::before{
+  content:'▸';
+  color:var(--brass);
+  position:absolute;left:-2px;top:50%;transform:translateY(-50%);
+  font-size:15px;
+}
+.steps li.sep{
+  list-style:none;
+  margin:22px 0 10px;
+  padding:0;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--brass-dim);
+  border-bottom:1px solid var(--line);
+  padding-bottom:6px;
+  cursor:default;
+}
+.steps li.sep:first-child{margin-top:0;}
+.steps li.final{
+  text-align:center;
+  font-family:var(--disp);
+  font-weight:700;
+  font-size:17px;
+  color:var(--brass);
+  background:transparent;
+  border:1px dashed var(--brass-dim);
+  cursor:default;
+}
+.steps li.final:hover{background:transparent;}
+
+/* ── cards génériques (procédures d'urgence, etc.) ─────*/
+.card{
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid var(--line); border-radius:14px; padding:18px;
+  margin-bottom:14px;
+}
+.card h2{font-size:15px;margin:0 0 10px;color:var(--mist);}
+.card.danger{border-color:#5A2323;}
+.card.danger h2{color:var(--danger);}
+.card ul{margin:0;padding-left:18px;}
+.card li{margin-bottom:8px;font-size:13.5px;line-height:1.5;}
+.card li:last-child{margin-bottom:0;}
+.card p.lead{
+  font-weight:600;color:var(--mist);margin:0 0 10px;font-size:13.5px;
+}
+.tag{
+  display:inline-block;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--danger);
+  border:1px solid #5A2323;border-radius:20px;padding:3px 9px;margin-bottom:10px;
+}
+
+.divider{height:1px;background:var(--line);margin:28px 0;}
+
+.ref-img{
+  width:100%;border-radius:12px;border:1px solid var(--line);
+  display:block;margin:4px 0 18px;
+}
+
+footer{max-width:560px;margin:34px auto 0;padding:0 18px;font-size:11px;color:var(--mist-dim);line-height:1.6;}
+footer b{color:var(--mist);}

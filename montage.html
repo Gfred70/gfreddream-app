@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Montage du rEvo — GfredDream</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18' stroke='%23C9975A' stroke-width='1.6' fill='%230A1620'/%3E%3Cpath d='M 11.51 28.49 A 12 12 0 0 1 8.41 16.89' stroke='%23E14444' stroke-width='3.4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M 8.41 16.89 A 12 12 0 0 1 28.49 11.51' stroke='%233FAE58' stroke-width='3.4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M 28.49 11.51 A 12 12 0 0 1 28.49 28.49' stroke='%23E14444' stroke-width='3.4' stroke-linecap='round' fill='none'/%3E%3Cline x1='20' y1='20' x2='17.7' y2='11.3' stroke='%23C9975A' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='20' cy='20' r='2.6' fill='%23C9975A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="checklist.css">
+</head>
+<body>
+
+<header>
+  <div class="headrow">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <circle cx="20" cy="20" r="18" stroke="var(--brass)" stroke-width="1.4" fill="var(--panel2)"/>
+        <path d="M 11.51 28.49 A 12 12 0 0 1 8.41 16.89" stroke="var(--danger)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M 8.41 16.89 A 12 12 0 0 1 28.49 11.51" stroke="var(--o2green)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M 28.49 11.51 A 12 12 0 0 1 28.49 28.49" stroke="var(--danger)" stroke-width="3" stroke-linecap="round"/>
+        <line x1="20" y1="20" x2="17.7" y2="11.3" stroke="var(--brass)" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="20" cy="20" r="2.4" fill="var(--brass)"/>
+      </svg>
+      <span>
+        <span class="brand-text">GFREDDREAM</span>
+        <span class="brand-sub">checklist</span>
+      </span>
+    </div>
+    <a class="back-btn" href="index.html">← Accueil</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="page-hero">
+    <div class="eyebrow">1 / 6 — Assemblage</div>
+    <h1>Montage du rEvo</h1>
+    <p class="page-hint">Assemblage complet de la machine à sec, avant tout gonflage de gaz. Tape une étape pour y poser le repère — les précédentes s'estompent.</p>
+  </div>
+
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <button class="reset-btn" id="resetBtn">↺ Réinitialiser</button>
+  </div>
+
+  <ol class="steps" id="steps">
+    <li class="step">Analyser le contenu du bloc O2 : %O2, pression</li>
+    <li class="step">Analyser le contenu du bloc diluant : %O2, %He, pression</li>
+    <li class="step">Installer les deux blocs sur l'appareil : vérifier la fixation correcte</li>
+    <li class="step">Connecter les détendeurs aux vannes des blocs</li>
+    <li class="step">Vérifier les millivolts dans l'air — Cellule 1 / Cellule 2 / Cellule 3 (8 mV &lt; cellules &lt; 13 mV)</li>
+    <li class="step">Vérifier la batterie externe : actionner le solénoïde 10 secondes, tension EXT &gt; 6,5 V</li>
+    <li class="step">Vérifier la durée de vie du capteur d'oxygène : le plus jeune a moins de 7 mois ? Sinon ajouter/remplacer et noter la date</li>
+    <li class="step">Vérifier le temps restant sur les cassettes de chaux : remplir avec de la chaux fraîche si nécessaire</li>
+    <li class="step">Mettre l'absorbeur d'humidité dans le poumon d'inspiration, SOUS le tube anti-collapse</li>
+    <li class="step">Installer correctement la grille des capteurs et la grille du solénoïde : vérifier le routage des câbles et tuyaux</li>
+    <li class="step">Installer les cassettes dans l'unité : marqueur TOP sur l'épurateur d'expiration (flèches vers le haut)</li>
+    <li class="step">Vérifier les joints toriques du couvercle, nettoyer les surfaces d'étanchéité, graisser si nécessaire, fermer le couvercle, vis serrée à la main</li>
+    <li class="step">Vérifier les tuyaux de la boucle respiratoire / contrôle stéréo des clapets anti-retour, vérifier l'embout et les joints toriques, nettoyer et graisser si nécessaire</li>
+    <li class="step">Installer la boucle respiratoire sur le recycleur</li>
+    <li class="step">Enrouler le câble HUD 3 à 4 fois dans le sens des aiguilles d'une montre autour de la boucle, clipser</li>
+    <li class="step">Vérifier le harnais, la sangle d'entrejambe, la sous-cutale</li>
+    <li class="final">Machine montée →</li>
+  </ol>
+
+  <p class="page-hint" style="margin-top:18px;">Étape suivante : <a href="preparation.html" style="color:var(--brass);">Préparation du rEvo</a></p>
+
+  <footer>
+    <p>Repère non persistant : ferme/rouvre la page pour repartir à zéro.</p>
+  </footer>
+
+</div>
+
+<script src="checklist.js"></script>
+</body>
+</html>

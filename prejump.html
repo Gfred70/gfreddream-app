@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pré-jump — GfredDream</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18' stroke='%23C9975A' stroke-width='1.6' fill='%230A1620'/%3E%3Cpath d='M 11.51 28.49 A 12 12 0 0 1 8.41 16.89' stroke='%23E14444' stroke-width='3.4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M 8.41 16.89 A 12 12 0 0 1 28.49 11.51' stroke='%233FAE58' stroke-width='3.4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M 28.49 11.51 A 12 12 0 0 1 28.49 28.49' stroke='%23E14444' stroke-width='3.4' stroke-linecap='round' fill='none'/%3E%3Cline x1='20' y1='20' x2='17.7' y2='11.3' stroke='%23C9975A' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='20' cy='20' r='2.6' fill='%23C9975A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="checklist.css">
+</head>
+<body>
+
+<header>
+  <div class="headrow">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <circle cx="20" cy="20" r="18" stroke="var(--brass)" stroke-width="1.4" fill="var(--panel2)"/>
+        <path d="M 11.51 28.49 A 12 12 0 0 1 8.41 16.89" stroke="var(--danger)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M 8.41 16.89 A 12 12 0 0 1 28.49 11.51" stroke="var(--o2green)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M 28.49 11.51 A 12 12 0 0 1 28.49 28.49" stroke="var(--danger)" stroke-width="3" stroke-linecap="round"/>
+        <line x1="20" y1="20" x2="17.7" y2="11.3" stroke="var(--brass)" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="20" cy="20" r="2.4" fill="var(--brass)"/>
+      </svg>
+      <span>
+        <span class="brand-text">GFREDDREAM</span>
+        <span class="brand-sub">checklist</span>
+      </span>
+    </div>
+    <a class="back-btn" href="index.html">← Accueil</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="page-hero">
+    <div class="eyebrow">3 / 6 — Au bord de l'eau</div>
+    <h1>Pré-jump</h1>
+    <p class="page-hint">Les toutes dernières vérifications, harnaché, juste avant de sauter à l'eau.</p>
+  </div>
+
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <button class="reset-btn" id="resetBtn">↺ Réinitialiser</button>
+  </div>
+
+  <ol class="steps" id="steps">
+    <li class="sep">Bail-out</li>
+    <li class="step">Ouvrir le bail-out / pression ?</li>
+    <li class="step">Respirer sur le bail-out / pression ?</li>
+    <li class="step">Connexions ?</li>
+
+    <li class="sep">Diluant (DIL)</li>
+    <li class="step">Ouvrir le diluant / pression ?</li>
+    <li class="step">ADV : aspirer... OK ?</li>
+    <li class="step">Ajouter du diluant manuellement (tout) / pression ?</li>
+    <li class="step">Gonfler l'aile ?</li>
+    <li class="step">Gonfler la combinaison étanche ?</li>
+
+    <li class="sep">Oxygène (O2)</li>
+    <li class="step">Ouvrir l'O2 / pression ?</li>
+    <li class="step">Shearwater sur [set-point bas] / solénoïde ?</li>
+    <li class="step">Ajouter de l'O2 manuellement (tout) / pression ?</li>
+    <li class="step">rEvodreams on</li>
+    <li class="step">PPO2 &gt; 0,7</li>
+    <li class="step">Batteries rEvodreams ? Shearwater ?</li>
+    <li class="step">Pré-respiration 5 min [ou RCT &gt; 0:45] / vérifier PPO2</li>
+    <li class="step">Gaz programmés dans le Shearwater ? Mode CC (pas OC) ?</li>
+
+    <li class="sep">Matériel annexe</li>
+    <li class="step">Vérifier masque, palmes, matériel de secours, coupe-ligne, lampes...</li>
+    <li class="final">PLOUF !</li>
+  </ol>
+
+  <p class="page-hint" style="margin-top:18px;">En cas de pépin sous l'eau : <a href="rechappe.html" style="color:var(--brass);">Procédure de réchappe</a></p>
+
+  <footer>
+    <p>Repère non persistant : ferme/rouvre la page pour repartir à zéro.</p>
+  </footer>
+
+</div>
+
+<script src="checklist.js"></script>
+</body>
+</html>

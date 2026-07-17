@@ -78,6 +78,21 @@
     border:1px solid var(--line); border-radius:14px; padding:18px;
     margin-bottom:12px;
   }
+
+  /* ── FiO2 : gros avertissement, à vérifier avant chaque plongée ─ */
+  .warn-card{
+    border-color:#5A2323;
+    box-shadow:0 0 0 1px rgba(225,68,68,.18), 0 6px 24px -8px rgba(225,68,68,.4);
+  }
+  .warn-head{display:flex;gap:11px;align-items:flex-start;margin-bottom:10px;}
+  .warn-icon{font-size:23px;line-height:1.1;flex:none;}
+  .warn-title{font-size:14.5px;font-weight:700;color:var(--mist);}
+  .warn-sub{font-size:12px;color:var(--mist-dim);line-height:1.5;margin-top:3px;}
+  .fio2-display{
+    font-family:var(--mono);font-size:44px;font-weight:700;color:var(--danger);
+    font-variant-numeric:tabular-nums;text-align:center;margin:8px 0 16px;letter-spacing:.01em;
+  }
+  .fio2-display .fio2-unit{font-size:16px;font-weight:500;color:var(--mist-dim);margin-left:7px;}
   .divider{height:1px;background:var(--line);margin:28px 0 0;}
 
   /* ── connect empty state ────────────────────────────── */
@@ -228,6 +243,40 @@
 
 <div class="wrap">
 
+  <!-- ═══ CHECKLISTS ═══ -->
+  <section>
+    <div class="eyebrow">Sur ce téléphone — aucun lien BLE</div>
+    <h2>Checklists</h2>
+    <div class="card" style="padding:8px 18px;">
+      <a href="montage.html" class="memo-row" style="text-decoration:none;">
+        <div class="memo-name">1 · Montage du rEvo</div>
+        <div class="memo-min" style="color:var(--mist-dim);">→</div>
+      </a>
+      <a href="preparation.html" class="memo-row" style="text-decoration:none;">
+        <div class="memo-name">2 · Préparation du rEvo</div>
+        <div class="memo-min" style="color:var(--mist-dim);">→</div>
+      </a>
+      <a href="prejump.html" class="memo-row" style="text-decoration:none;">
+        <div class="memo-name">3 · Pré-jump</div>
+        <div class="memo-min" style="color:var(--mist-dim);">→</div>
+      </a>
+      <a href="rechappe.html" class="memo-row" style="text-decoration:none;">
+        <div class="memo-name">4 · Procédure de réchappe</div>
+        <div class="memo-min" style="color:var(--mist-dim);">→</div>
+      </a>
+      <a href="procedure-revodream.html" class="memo-row" style="text-decoration:none;">
+        <div class="memo-name">5 · Procédure rEvodream</div>
+        <div class="memo-min" style="color:var(--mist-dim);">→</div>
+      </a>
+      <a href="procedure-gfreddream.html" class="memo-row" style="text-decoration:none;">
+        <div class="memo-name">6 · Procédure GfredDream</div>
+        <div class="memo-min" style="color:var(--mist-dim);">→</div>
+      </a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
   <!-- ═══ CONNEXION ═══ -->
   <section id="connectSection">
     <div class="card connect-card" id="connectCard">
@@ -243,19 +292,23 @@
     <div class="eyebrow">Sur l'appareil — en direct</div>
     <h2>Réglages</h2>
 
-    <div class="card">
-      <div class="ctrl">
-        <div class="ctrl-top">
-          <span class="ctrl-label">FiO2 de référence</span>
-          <span class="ctrl-value"><span id="fio2Val">0.98</span> bar</span>
-        </div>
-        <input type="range" id="fio2Slider" min="0.20" max="1.00" step="0.01" value="0.98" aria-label="FiO2 de référence, de 0.20 à 1.00 bar">
-        <div class="presets">
-          <button class="preset-btn" data-fio2="0.21">Air · 0.21</button>
-          <button class="preset-btn" data-fio2="0.98">O2 pur · 0.98</button>
+    <div class="card warn-card">
+      <div class="warn-head">
+        <span class="warn-icon">⚠️</span>
+        <div>
+          <div class="warn-title">FiO2 de référence</div>
+          <div class="warn-sub">À vérifier avant CHAQUE plongée — une erreur ici fausse directement ta PPO2 affichée.</div>
         </div>
       </div>
+      <div class="fio2-display"><span id="fio2Val">0.98</span><span class="fio2-unit">bar</span></div>
+      <input type="range" id="fio2Slider" min="0.20" max="1.00" step="0.01" value="0.98" aria-label="FiO2 de référence, de 0.20 à 1.00 bar">
+      <div class="presets">
+        <button class="preset-btn" data-fio2="0.21">Air · 0.21</button>
+        <button class="preset-btn" data-fio2="0.98">O2 pur · 0.98</button>
+      </div>
+    </div>
 
+    <div class="card">
       <div class="ctrl">
         <div class="ctrl-top">
           <span class="ctrl-label">Luminosité écran</span>
