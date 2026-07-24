@@ -136,6 +136,38 @@
   .conv-row input:focus-visible{outline:2px solid var(--brass);}
   .conv-row span{font-family:var(--mono);font-size:13px;color:var(--brass);flex:none;white-space:nowrap;}
 
+  /* ── Re-calibration obligatoire (bandeau live) ─────────────────────── */
+  .recal-banner{
+    margin-top:14px;padding:12px 14px;border-radius:10px;text-align:center;
+    background:rgba(230,60,60,.14);border:1.5px solid var(--danger);
+    color:var(--danger);font-weight:800;font-size:15px;letter-spacing:.02em;
+    animation:recalPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes recalPulse{0%,100%{opacity:1;}50%{opacity:.55;}}
+  @media (prefers-reduced-motion: reduce){ .recal-banner{animation:none;} }
+
+  /* ── Calibrer à distance ────────────────────────────────────────────*/
+  .calib-card-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;}
+  .calib-btn{width:100%;font-size:16px;font-weight:700;letter-spacing:.03em;padding:14px;}
+
+  /* ── Réinitialiser — plus grand, centré ─────────────────────────────*/
+  .reset-row{flex-direction:column;align-items:center;gap:8px;}
+  .reset-btn{font-size:16px;font-weight:700;padding:15px 34px;border-radius:12px;}
+  .reset-sub{font-family:var(--mono);font-size:11.5px;color:var(--mist-dim);text-align:center;}
+
+  /* ── Calibration revodream (mode B) ─────────────────────────────────*/
+  .revodream-cal{
+    margin-top:12px;padding:10px 12px;border-radius:10px;text-align:center;
+    background:rgba(230,60,60,.10);border:1px solid var(--danger);
+    font-size:12.5px;color:var(--mist);line-height:1.5;
+  }
+  .revodream-cal b{color:var(--danger);font-size:14px;}
+  .revodream-cal a{color:var(--brass);}
+  .revodream-cal-a{
+    margin-top:12px;font-size:12px;color:var(--mist-dim);text-align:center;
+  }
+  .revodream-cal-a b{color:var(--mist);}
+
   /* ── connect empty state ────────────────────────────── */
   .connect-card{
     text-align:center;padding:34px 20px;
@@ -344,6 +376,17 @@
     <div class="eyebrow">Sur l'appareil — en direct</div>
     <h2>Réglages</h2>
 
+    <div class="card calib-card">
+      <div class="calib-card-head">
+        <span class="warn-icon">🎯</span>
+        <div>
+          <div class="warn-title">Calibrer à distance</div>
+          <div class="warn-sub">Secours si l'aimant est perdu — lance la même calibration que le reed (10 s + résultat), sur les cellules dans l'état où elles sont maintenant.</div>
+        </div>
+      </div>
+      <button class="btn primary calib-btn" id="calibBtn">CALIBRER</button>
+    </div>
+
     <div class="card warn-card">
       <div class="warn-head">
         <span class="warn-icon">⚠️</span>
@@ -380,6 +423,12 @@
         <span class="verdict-dot ok" id="mbarVerdictDot"></span>
         <span class="verdict-text" id="mbarVerdictText">OK · config A → écrit 1013</span>
       </div>
+
+      <div class="revodream-cal" id="revodreamCal" hidden>
+        Calibration revodream à <b id="revodreamCalVal">0.98</b> (mode B — au 3 push, étape « adaptation seelevel »)
+        — <a href="procedure-revodream.html">marche à suivre →</a>
+      </div>
+      <div class="revodream-cal-a" id="revodreamCalA">Mode A : revodream reste à <b>0.98</b>, calibration standard inchangée.</div>
 
       <p class="hint" style="margin:12px 0 0;">Écriture immédiate — invalide ta calibration en cours (HUD éteint, tirets) jusqu'à un nouveau calibrage.</p>
 
@@ -446,10 +495,12 @@
         </div>
       </div>
       <p class="hint" style="margin:12px 0 0;">Calib. vert = une calibration est enregistrée pour cette cellule (pas d'indicateur de péremption pour l'instant).</p>
+      <div class="recal-banner" id="recalBanner" hidden>Re-Calibration OBLIGATOIRE !!!</div>
     </div>
 
-    <div class="row-end">
-      <button class="btn danger" id="resetBtn">Réinitialiser (FiO2 0.98 + luminosités 100%)</button>
+    <div class="row-end reset-row">
+      <button class="btn danger reset-btn" id="resetBtn">Réinitialiser</button>
+      <div class="reset-sub">(FiO2 0.98 · Lum Écran 50% · Lum HUD 2%)</div>
     </div>
   </section>
 
@@ -578,6 +629,7 @@
   const RESET = '12340009-0000-0000-0000-000000000000';
   const HUDBRT= '1234000b-0000-0000-0000-000000000000';
   const MBAR  = '1234000c-0000-0000-0000-000000000000';
+  const CALTRIG = '1234000d-0000-0000-0000-000000000000';
 
   const MBAR_STANDARD_THRESHOLD = 930;   // seuil unique, décisionnel (Fred, 24/07/2026)
   const MBAR_INPUT_MIN = 700, MBAR_INPUT_MAX = 1080; // clamp anti-faute-de-frappe uniquement
@@ -632,12 +684,15 @@
       chars.calib = await service.getCharacteristic(CALIB);
       chars.reset = await service.getCharacteristic(RESET);
       chars.mbar  = await service.getCharacteristic(MBAR);
+      chars.caltrig = await service.getCharacteristic(CALTRIG);
 
       await readAll();
       await chars.batt.startNotifications();
       chars.batt.addEventListener('characteristicvaluechanged', e => renderBatt(e.target.value));
       await chars.cell.startNotifications();
       chars.cell.addEventListener('characteristicvaluechanged', e => renderCell(e.target.value));
+      await chars.calib.startNotifications();
+      chars.calib.addEventListener('characteristicvaluechanged', e => renderCalib(e.target.value));
 
       setStatus('up', device.name || 'connecté');
       connectLabel.textContent = 'Déconnecter';
@@ -728,8 +783,12 @@
   function renderCalib(dv){
     if (dv.byteLength < 1) return;
     const b = dv.getUint8(0);
-    $('calibDot1').classList.toggle('ok', !!(b & 0x01));
-    $('calibDot2').classList.toggle('ok', !!(b & 0x02));
+    const ok1 = !!(b & 0x01), ok2 = !!(b & 0x02);
+    $('calibDot1').classList.toggle('ok', ok1);
+    $('calibDot2').classList.toggle('ok', ok2);
+    // v5.14.0 — reflète en direct l'invalidation réelle du device (pression
+    // OU FiO2 désassortis à la dernière calib), poussée par notify BLE.
+    $('recalBanner').hidden = (ok1 && ok2);
   }
   function renderMbar(dv){
     if (dv.byteLength < 2) return;
@@ -751,9 +810,18 @@
     if (v >= MBAR_STANDARD_THRESHOLD) {
       dot.className = 'verdict-dot ok';
       txt.textContent = 'OK · config A → écrit 1013';
+      $('revodreamCal').hidden = true;
+      $('revodreamCalA').hidden = false;
     } else {
       dot.className = 'verdict-dot ko';
       txt.textContent = 'KO · config B → écrit la valeur saisie';
+      // Le rEvodream d'origine n'a pas de compensation d'altitude : on lui
+      // indique une valeur de calibration abaissée pour compenser la
+      // pression réelle plus faible. Formule : 0.98 × (NOW / 1013).
+      const revoVal = (0.98 * (v / 1013)).toFixed(2);
+      $('revodreamCalVal').textContent = revoVal;
+      $('revodreamCal').hidden = false;
+      $('revodreamCalA').hidden = true;
     }
   }
 
@@ -787,18 +855,41 @@
     await chars.mbar.writeValue(buf);
   }, 250);
 
+  // v5.14.0 — décision Fred : toute valeur de FiO2 de calibrage différente
+  // de 0.98 (y compris le preset Air 0.21) passe par une double confirmation
+  // avant d'être écrite. Le slider ne fait plus qu'un aperçu pendant le
+  // drag ('input') ; l'écriture réelle n'a lieu qu'au relâchement ('change')
+  // ou au clic sur un preset — jamais pendant le drag lui-même.
+  async function confirmFio2(bar){
+    if (Math.abs(bar - 0.98) < 0.0005) return true;
+    if (!confirm('Sûr ? FiO2 de calibrage à ' + bar.toFixed(2) + ' (≠ 0.98)')) return false;
+    return confirm('Certain ? Cette valeur sera utilisée comme référence de calibrage.');
+  }
+  async function commitFio2(bar){
+    const ok = await confirmFio2(bar);
+    if (!ok) { renderFio2Local(); return; }   // annulé → revient à la valeur lue sur l'appareil
+    writeFio2(bar);
+  }
+  function renderFio2Local(){
+    // Remet le slider/affichage sur la dernière valeur connue de l'appareil.
+    if (chars.fio2) chars.fio2.readValue().then(renderFio2);
+  }
+
   $('fio2Slider').addEventListener('input', e => {
     if (suppressFio2Echo) return;
     const bar = parseFloat(e.target.value);
-    $('fio2Val').textContent = bar.toFixed(2);
-    writeFio2(bar);
+    $('fio2Val').textContent = bar.toFixed(2);   // aperçu seul, pas d'écriture
+  });
+  $('fio2Slider').addEventListener('change', e => {
+    if (suppressFio2Echo) return;
+    commitFio2(parseFloat(e.target.value));
   });
   document.querySelectorAll('[data-fio2]').forEach(btn => {
     btn.addEventListener('click', () => {
       const bar = parseFloat(btn.dataset.fio2);
       $('fio2Slider').value = bar;
       $('fio2Val').textContent = bar.toFixed(2);
-      writeFio2(bar);
+      commitFio2(bar);
     });
   });
   $('britSlider').addEventListener('input', e => {
@@ -842,9 +933,35 @@
     $('mbarConvResult').textContent = '→ ' + mb + ' mb';
   });
 
+  // v5.14.0 — Lot 4 : CALIBRER à distance. Double confirmation côté appli
+  // (Sûr ? / Certain ?) + double confirmation côté protocole BLE lui-même
+  // (ARM 0x5A puis GO 0xA5 <10s, voir CbCalTrig firmware) — appuyer sur ce
+  // bouton lance une VRAIE calibration sur les cellules dans leur état
+  // actuel, exactement comme tenir l'aimant sur le reed.
+  $('calibBtn').addEventListener('click', async () => {
+    if (!chars.caltrig) return;
+    if (!confirm('Sûr ? Lancer une calibration maintenant, sur les cellules dans leur état actuel ?')) return;
+    if (!confirm('Certain ? Ça prend ~12 s et ça remplace la calibration en cours.')) return;
+    const btn = $('calibBtn');
+    const label = btn.textContent;
+    btn.disabled = true;
+    try {
+      await chars.caltrig.writeValue(Uint8Array.of(0x5A));   // ARM
+      await new Promise(r => setTimeout(r, 150));
+      await chars.caltrig.writeValue(Uint8Array.of(0xA5));   // GO
+      btn.textContent = 'Calibration en cours (~12 s)…';
+      setTimeout(() => { btn.disabled = false; btn.textContent = label; readAll(); }, 13000);
+    } catch (err) {
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = label;
+      alert('Échec de la commande de calibration : ' + err.message);
+    }
+  });
+
   $('resetBtn').addEventListener('click', async () => {
     if (!chars.reset) return;
-    if (!confirm('Remettre FiO2 à 0.98 et les 2 luminosités à 100% ?')) return;
+    if (!confirm('Remettre FiO2 à 0.98, luminosité écran à 50% et HUD à 2% ?')) return;
     await chars.reset.writeValue(Uint8Array.of(0xAA));
     setTimeout(readAll, 300);
   });

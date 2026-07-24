@@ -49,6 +49,19 @@
       <li><b>4 push</b> — Reset : 4 flashs lents, puis vert clignotant rapide = OK, puis extinction.</li>
       <li><b>6 push</b> — Mode SCR : 6 flashs lents, confirmation, puis vert clignotant rapide = OK, puis extinction.</li>
     </ul>
+    <p style="font-size:12.5px;color:var(--mist-dim);margin:10px 0 0;">L'étape « adaptation seelevel » du 3 push est le point où la valeur d'altitude ci-dessous s'applique.</p>
+  </div>
+
+  <div class="card danger">
+    <span class="tag">Altitude</span>
+    <h2 style="color:var(--danger);">Calibration à l'altitude (mode B)</h2>
+    <p class="lead">Le rEvodream d'origine n'a pas de compensation d'altitude automatique — c'est la valeur de calibration elle-même qu'il faut adapter pour compenser la pression réelle.</p>
+    <ul>
+      <li><b>Mode A (standard, ≥ 930 mb)</b> — calibration au 3 push inchangée, valeur <b>0.98</b> comme toujours.</li>
+      <li><b>Mode B (altitude, &lt; 930 mb)</b> — utilise la valeur affichée dans la carte « Pression de calibration » de la PWA (calculée à partir du NOW Shearwater que tu viens de taper), au lieu de 0.98, dans l'étape « adaptation seelevel » du 3 push.</li>
+    </ul>
+    <p style="font-size:12.5px;color:var(--mist-dim);margin:10px 0 0;">Formule : 0.98 × (pression NOW / 1013). Compense le fait que le rEvodream calcule toujours comme si tu étais à 1013 mb — en indiquant une valeur plus basse à la calibration, le résultat final reste juste malgré la pression réelle plus faible.</p>
+    <p style="font-size:12.5px;color:var(--warn);margin:8px 0 0;">Valeur affichée à titre indicatif par la PWA — vérifie-la une fois calmement avant de t'y fier en plongée réelle.</p>
   </div>
 
   <div class="card">

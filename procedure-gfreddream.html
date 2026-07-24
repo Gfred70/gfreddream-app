@@ -33,7 +33,7 @@
   <div class="page-hero">
     <div class="eyebrow">6 / 6 — Ton boîtier maison</div>
     <h1>Procédure GfredDream</h1>
-    <p class="page-hint">D'après le manuel utilisateur v1 — firmware v4.6.6, juillet 2026.</p>
+    <p class="page-hint">D'après le manuel utilisateur v1 — firmware v5.14.0, juillet 2026.</p>
   </div>
 
   <div class="card">
@@ -71,6 +71,32 @@
   </div>
 
   <div class="card">
+    <h2>Pression et altitude</h2>
+    <p class="lead">Le GfredDream compense automatiquement la pression atmosphérique réelle — le rEvodream d'origine ne le fait pas (voir la procédure rEvodream pour la calibration manuelle à l'altitude).</p>
+    <ul>
+      <li><b>Config A (≥ 930 mb)</b> — usage quotidien, la carte « Pression de calibration » de la PWA écrit 1013 mb fixe.</li>
+      <li><b>Config B (&lt; 930 mb)</b> — vraie altitude, la carte écrit la pression NOW lue sur le Shearwater telle quelle.</li>
+      <li>Formule appliquée : <code>PPO2 = mV/mV_cal × FiO2 × (mbar / 1013)</code>.</li>
+      <li>Écrire une nouvelle pression invalide la calibration en cours, immédiatement (voir Calibration ci-dessous) — c'est volontaire, ça évite d'afficher une PPO2 fausse.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Divergence entre cellules</h2>
+    <p class="lead">Si l'écart entre C1 et C2 dépasse 0,15 bar pendant plus de 1,5 s, le HUD s'éteint et un petit crâne clignotant apparaît à l'écran — signe que les deux cellules ne sont plus d'accord entre elles, même si chacune reste individuellement dans une plage plausible.</p>
+    <p style="font-size:12.5px;color:var(--mist-dim);margin:10px 0 0;">Différent de l'écran d'urgence ci-dessous (qui se déclenche quand les DEUX cellules sortent de plage) — ici les deux lectures restent chacune crédibles, elles divergent juste entre elles.</p>
+  </div>
+
+  <div class="card">
+    <h2>Récupération après urgence (AL_DEAD)</h2>
+    <p class="lead">Si l'écran d'urgence (deux cellules KO) s'est déclenché, il n'y a pas de sortie automatique — pour éviter de se croire guéri tout seul. Sortie manuelle uniquement :</p>
+    <ul>
+      <li>Maintiens l'aimant sur le reed le temps de calibration habituel → relance une vraie calibration en direct, sans reboot.</li>
+      <li>Ou coupe l'alimentation (reed NF) puis rallume.</li>
+    </ul>
+  </div>
+
+  <div class="card">
     <h2>Calibration</h2>
     <p class="lead">Quand calibrer : après les 3 lavages O2 si la PPO2 diverge de l'instrument principal, après un changement de cellule, ou si le contrôle à 1,60 bar montre un écart inhabituel.</p>
     <ul>
@@ -82,6 +108,9 @@
     </ul>
     <p style="font-size:12.5px;color:var(--mist-dim);margin:10px 0 0;">Plage acceptée : 36–64 mV à l'O2 pur (0,98), mise à l'échelle automatiquement selon ton FiO2 de référence (ex. air de banc à 0,21 → 7,7–13,7 mV).</p>
     <p style="font-size:12.5px;color:var(--warn);margin:8px 0 0;">Verrou FiO2 : changer le FiO2 de référence après avoir calibré invalide automatiquement la calibration au redémarrage suivant — recalibration obligatoire avant d'afficher une PPO2 de nouveau.</p>
+    <p style="font-size:12.5px;color:var(--warn);margin:8px 0 0;">Même chose pour la pression : la changer invalide la calibration IMMÉDIATEMENT (pas besoin de redémarrer) — voir la carte « Pression et altitude » plus haut.</p>
+    <p style="font-size:12.5px;color:var(--mist-dim);margin:8px 0 0;">La PWA reflète cette invalidation en direct dans la carte « État de l'appareil » : dès qu'une calibration devient invalide, un bandeau rouge « Re-Calibration OBLIGATOIRE !!! » apparaît, sans besoin de reconnecter.</p>
+    <p style="font-size:12.5px;color:var(--mist-dim);margin:8px 0 0;">Secours si l'aimant est perdu : bouton « CALIBRER » dans la PWA, juste au-dessus du réglage FiO2 — double confirmation, puis lance exactement la même calibration que le reed.</p>
   </div>
 
   <div class="card danger">
@@ -110,7 +139,7 @@
   </a>
 
   <footer>
-    <p>Page de référence — pas de repère glissant ici. Contenu repris du manuel utilisateur v1 (firmware v4.6.6, juillet 2026).</p>
+    <p>Page de référence — pas de repère glissant ici. Contenu repris du manuel utilisateur v1 (firmware v5.14.0, juillet 2026).</p>
   </footer>
 
 </div>
