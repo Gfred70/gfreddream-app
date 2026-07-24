@@ -98,6 +98,44 @@
   .fio2-display .fio2-unit{font-size:16px;font-weight:500;color:var(--mist-dim);margin-left:7px;}
   .divider{height:1px;background:var(--line);margin:28px 0 0;}
 
+  /* ── Pression de calibration ───────────────────────────*/
+  .mbar-input{
+    font-family:var(--mono);font-size:22px;font-weight:700;color:var(--mist);
+    text-align:center;background:var(--panel);border:1px solid var(--line);
+    border-radius:8px;padding:10px;width:100%;font-variant-numeric:tabular-nums;
+  }
+  .mbar-input:focus-visible{outline:2px solid var(--brass);}
+  .mbar-alt{
+    font-family:var(--mono);font-size:11.5px;color:var(--mist-dim);
+    text-align:center;margin:7px 0 6px;
+  }
+  .mbar-zone-hint{
+    font-size:11px;color:var(--mist-dim);text-align:center;line-height:1.5;margin:0 0 14px;
+  }
+  .verdict-row{
+    display:flex;align-items:center;gap:9px;justify-content:center;
+    padding:11px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);
+  }
+  .verdict-dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--mist-dim);}
+  .verdict-dot.ok{background:var(--o2green);box-shadow:0 0 8px var(--o2green);}
+  .verdict-dot.ko{background:var(--danger);box-shadow:0 0 8px var(--danger);}
+  .verdict-text{font-size:13px;font-weight:600;}
+  .mbar-device{
+    font-family:var(--mono);font-size:12px;color:var(--mist-dim);
+    text-align:center;margin-top:14px;
+  }
+  .mbar-device b{color:var(--brass);}
+  .mbar-conv{margin-top:14px;}
+  .mbar-conv summary{font-size:12px;color:var(--mist-dim);cursor:pointer;}
+  .mbar-conv summary:focus-visible{outline:2px solid var(--brass);}
+  .conv-row{display:flex;gap:10px;align-items:center;margin-top:10px;}
+  .conv-row input{
+    font-family:var(--mono);font-size:13px;background:var(--panel);border:1px solid var(--line);
+    color:var(--mist);border-radius:8px;padding:8px 10px;flex:1;min-width:0;
+  }
+  .conv-row input:focus-visible{outline:2px solid var(--brass);}
+  .conv-row span{font-family:var(--mono);font-size:13px;color:var(--brass);flex:none;white-space:nowrap;}
+
   /* ── connect empty state ────────────────────────────── */
   .connect-card{
     text-align:center;padding:34px 20px;
@@ -322,6 +360,40 @@
       </div>
     </div>
 
+    <div class="card warn-card">
+      <div class="warn-head">
+        <span class="warn-icon">⚠️</span>
+        <div>
+          <div class="warn-title">Pression de calibration</div>
+          <div class="warn-sub">À vérifier avant chaque plongée — recopie le <b>NOW</b> du Shearwater (la pression réelle, pas le SeaLvl).</div>
+        </div>
+      </div>
+
+      <span class="field-lbl">NOW Shearwater</span>
+      <input type="number" inputmode="numeric" id="mbarInput" class="mbar-input"
+             min="700" max="1080" step="1" value="1013"
+             aria-label="Pression NOW lue sur le Shearwater, en millibars">
+      <div class="mbar-alt" id="mbarAlt">≈ 0 m (indicatif, base 1013 mb = 0 m)</div>
+      <div class="mbar-zone-hint">Zone standard ≥ 930 mb · 1080 mb = simple limite de saisie (anti-faute-de-frappe, ne décide de rien)</div>
+
+      <div class="verdict-row" id="mbarVerdictRow">
+        <span class="verdict-dot ok" id="mbarVerdictDot"></span>
+        <span class="verdict-text" id="mbarVerdictText">OK · config A → écrit 1013</span>
+      </div>
+
+      <p class="hint" style="margin:12px 0 0;">Écriture immédiate — invalide ta calibration en cours (HUD éteint, tirets) jusqu'à un nouveau calibrage.</p>
+
+      <div class="mbar-device" id="mbarDevice">Sur l'appareil : <b id="mbarDeviceVal">—</b></div>
+
+      <details class="mbar-conv">
+        <summary>Convertisseur mètres → mbar (approximatif)</summary>
+        <div class="conv-row">
+          <input type="number" id="mbarConvM" placeholder="altitude en m" inputmode="numeric">
+          <span id="mbarConvResult">→ — mb</span>
+        </div>
+      </details>
+    </div>
+
     <div class="card">
       <div class="ctrl">
         <div class="ctrl-top">
@@ -505,10 +577,24 @@
   const CALIB = '12340008-0000-0000-0000-000000000000';
   const RESET = '12340009-0000-0000-0000-000000000000';
   const HUDBRT= '1234000b-0000-0000-0000-000000000000';
+  const MBAR  = '1234000c-0000-0000-0000-000000000000';
+
+  const MBAR_STANDARD_THRESHOLD = 930;   // seuil unique, décisionnel (Fred, 24/07/2026)
+  const MBAR_INPUT_MIN = 700, MBAR_INPUT_MAX = 1080; // clamp anti-faute-de-frappe uniquement
 
   let chars = {};
   let device = null;
-  let suppressFio2Echo = false, suppressBritEcho = false, suppressHudEcho = false;
+  let suppressFio2Echo = false, suppressBritEcho = false, suppressHudEcho = false, suppressMbarEcho = false;
+
+  // ── Formule ISA standard, base 1013.25 mb = 0 m — purement indicatif ──
+  function altitudeFromMbar(mb){
+    const ratio = mb / 1013.25;
+    if (ratio <= 0) return 0;
+    return (1 - Math.pow(ratio, 1 / 5.25588)) / 2.25577e-5;
+  }
+  function mbarFromAltitude(m){
+    return 1013.25 * Math.pow(1 - 2.25577e-5 * m, 5.25588);
+  }
 
   const $ = id => document.getElementById(id);
   const statusDot = $('statusDot'), subStatus = $('subStatus'), connectLabel = $('connectLabel');
@@ -545,6 +631,7 @@
       chars.cell  = await service.getCharacteristic(CELL);
       chars.calib = await service.getCharacteristic(CALIB);
       chars.reset = await service.getCharacteristic(RESET);
+      chars.mbar  = await service.getCharacteristic(MBAR);
 
       await readAll();
       await chars.batt.startNotifications();
@@ -596,6 +683,8 @@
     renderCell(cellv);
     const calibv = await chars.calib.readValue();
     renderCalib(calibv);
+    const mbarv = await chars.mbar.readValue();
+    renderMbar(mbarv);
   }
 
   function renderFio2(dv){
@@ -642,6 +731,31 @@
     $('calibDot1').classList.toggle('ok', !!(b & 0x01));
     $('calibDot2').classList.toggle('ok', !!(b & 0x02));
   }
+  function renderMbar(dv){
+    if (dv.byteLength < 2) return;
+    const v = dv.getUint16(0, true);
+    suppressMbarEcho = true;
+    $('mbarInput').value = v;
+    suppressMbarEcho = false;
+    $('mbarDeviceVal').textContent = v + ' mb · config ' + (v === 1013 ? 'A' : 'B');
+    updateMbarUI(v);
+  }
+
+  // ── Verdict + altitude indicative, recalculés à chaque frappe ────────
+  function updateMbarUI(rawValue){
+    const v = Math.round(rawValue);
+    const alt = Math.round(altitudeFromMbar(v));
+    $('mbarAlt').textContent = '≈ ' + alt + ' m (indicatif, base 1013 mb = 0 m)';
+
+    const dot = $('mbarVerdictDot'), txt = $('mbarVerdictText');
+    if (v >= MBAR_STANDARD_THRESHOLD) {
+      dot.className = 'verdict-dot ok';
+      txt.textContent = 'OK · config A → écrit 1013';
+    } else {
+      dot.className = 'verdict-dot ko';
+      txt.textContent = 'KO · config B → écrit la valeur saisie';
+    }
+  }
 
   // ── write on user interaction (debounced while dragging) ─────────
   function debounce(fn, ms){
@@ -662,6 +776,16 @@
     if (!chars.hudbrt) return;
     await chars.hudbrt.writeValue(Uint8Array.of(v));
   }, 200);
+  // Seuil unique 930 : >=930 -> écrit 1013 (config A) ; <930 -> écrit la valeur
+  // saisie telle quelle (config B). 700-1080 = clamp anti-faute-de-frappe,
+  // ne décide jamais de rien.
+  const writeMbar = debounce(async (typed) => {
+    if (!chars.mbar) return;
+    const clamped = Math.max(MBAR_INPUT_MIN, Math.min(MBAR_INPUT_MAX, Math.round(typed)));
+    const toWrite = (clamped >= MBAR_STANDARD_THRESHOLD) ? 1013 : clamped;
+    const buf = new ArrayBuffer(2); new DataView(buf).setUint16(0, toWrite, true);
+    await chars.mbar.writeValue(buf);
+  }, 250);
 
   $('fio2Slider').addEventListener('input', e => {
     if (suppressFio2Echo) return;
@@ -702,6 +826,22 @@
   document.querySelectorAll('[data-hudbrt]').forEach(btn => {
     btn.addEventListener('click', () => setHud(parseInt(btn.dataset.hudbrt, 10)));
   });
+  $('mbarInput').addEventListener('input', e => {
+    if (suppressMbarEcho) return;
+    const v = parseFloat(e.target.value);
+    if (isNaN(v)) return;
+    updateMbarUI(v);
+    writeMbar(v);
+  });
+
+  // ── Convertisseur mètres → mbar, purement indicatif, aucun lien BLE ───
+  $('mbarConvM').addEventListener('input', e => {
+    const m = parseFloat(e.target.value);
+    if (isNaN(m)) { $('mbarConvResult').textContent = '→ — mb'; return; }
+    const mb = Math.round(mbarFromAltitude(m));
+    $('mbarConvResult').textContent = '→ ' + mb + ' mb';
+  });
+
   $('resetBtn').addEventListener('click', async () => {
     if (!chars.reset) return;
     if (!confirm('Remettre FiO2 à 0.98 et les 2 luminosités à 100% ?')) return;
