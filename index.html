@@ -163,6 +163,24 @@
   }
   .btn.calib-btn:hover{background:#C93636;}
 
+  /* ── Historique calibration (lot 5) ──────────────────────────────────*/
+  .calhist-row{
+    display:flex;align-items:center;gap:12px;padding:8px 0;
+    border-top:1px solid var(--line);
+  }
+  .calhist-row:first-of-type{border-top:none;}
+  .calhist-label{
+    font-family:var(--disp);font-weight:700;font-size:13px;color:var(--mist);
+    flex:none;width:22px;
+  }
+  .calhist-vals{
+    font-family:var(--mono);font-size:12.5px;color:var(--mist-dim);
+    font-variant-numeric:tabular-nums;flex:1;
+  }
+  .calhist-vals .delta-declining{color:var(--danger);}
+  .calhist-vals .delta-rising{color:var(--warn);}
+  .calhist-vals .delta-stable{color:var(--o2green);}
+
   /* ── Réinitialiser — plus grand, centré ─────────────────────────────*/
   .reset-row{flex-direction:column;align-items:center;gap:8px;}
   .reset-btn{font-size:16px;font-weight:700;padding:15px 34px;border-radius:12px;}
@@ -370,6 +388,18 @@
         </div>
       </div>
       <button class="btn primary calib-btn" id="calibBtn">CALIBRER</button>
+    </div>
+
+    <div class="card calhist-card" id="calHistCard">
+      <div class="calib-card-head" style="margin-bottom:10px;">
+        <span class="warn-icon">📈</span>
+        <div>
+          <div class="warn-title">Historique calibration</div>
+          <div class="warn-sub">3 dernières calibrations valides par cellule — pour repérer une dérive progressive.</div>
+        </div>
+      </div>
+      <div class="calhist-row"><span class="calhist-label">C1</span><span class="calhist-vals" id="calHistC1">—</span></div>
+      <div class="calhist-row"><span class="calhist-label">C2</span><span class="calhist-vals" id="calHistC2">—</span></div>
     </div>
 
     <div class="card warn-card">
@@ -650,6 +680,7 @@
   const HUDBRT= '1234000b-0000-0000-0000-000000000000';
   const MBAR  = '1234000c-0000-0000-0000-000000000000';
   const CALTRIG = '1234000d-0000-0000-0000-000000000000';
+  const CALHIST = '1234000e-0000-0000-0000-000000000000';
 
   const MBAR_STANDARD_THRESHOLD = 930;   // seuil unique, décisionnel (Fred, 24/07/2026)
   const MBAR_INPUT_MIN = 700, MBAR_INPUT_MAX = 1080; // clamp anti-faute-de-frappe uniquement
@@ -707,6 +738,7 @@
       chars.reset = await service.getCharacteristic(RESET);
       chars.mbar  = await service.getCharacteristic(MBAR);
       chars.caltrig = await service.getCharacteristic(CALTRIG);
+      chars.calhist = await service.getCharacteristic(CALHIST);
 
       await readAll();
       await chars.batt.startNotifications();
@@ -715,6 +747,8 @@
       chars.cell.addEventListener('characteristicvaluechanged', e => renderCell(e.target.value));
       await chars.calib.startNotifications();
       chars.calib.addEventListener('characteristicvaluechanged', e => renderCalib(e.target.value));
+      await chars.calhist.startNotifications();
+      chars.calhist.addEventListener('characteristicvaluechanged', e => renderCalHist(e.target.value));
 
       setStatus('up', device.name || 'connecté');
       connectBtn2.textContent = 'Déconnecter';
@@ -759,6 +793,8 @@
     renderCalib(calibv);
     const mbarv = await chars.mbar.readValue();
     renderMbar(mbarv);
+    const calhistv = await chars.calhist.readValue();
+    renderCalHist(calhistv);
   }
 
   // Vert = 0.98 (standard, config A) ; rouge = toute autre valeur.
@@ -814,6 +850,33 @@
     // v5.14.0 — reflète en direct l'invalidation réelle du device (pression
     // OU FiO2 désassortis à la dernière calib), poussée par notify BLE.
     $('recalBanner').hidden = (ok1 && ok2);
+  }
+
+  // v5.15.0 — Lot 5 : historique 3 calibs/cellule, format mV×10 int16[6]
+  // (C1h0,C1h1,C1h2,C2h0,C2h1,C2h2). 0 = case vide (pas encore 3 calibs
+  // valides dans l'historique) — gère 0, 1, 2 ou 3 valeurs proprement plutôt
+  // que d'afficher un delta absurde depuis un zéro qui ne veut rien dire.
+  function formatCalHistRow(vals){
+    const nz = vals.filter(v => v > 0);
+    if (nz.length === 0) return 'Pas encore de calibration enregistrée';
+    if (nz.length === 1) return nz[0].toFixed(1) + ' mV (une seule calib pour l\'instant)';
+    const parts = [nz[0].toFixed(1) + ' mV'];
+    const deltas = [];
+    for (let i = 1; i < nz.length; i++) {
+      const pct = ((nz[i] - nz[i-1]) / nz[i-1]) * 100;
+      const cls = pct <= -3 ? 'delta-declining' : pct >= 3 ? 'delta-rising' : 'delta-stable';
+      const sign = pct > 0 ? '+' : '';
+      parts.push(nz[i].toFixed(1) + ' mV');
+      deltas.push('<span class="' + cls + '">' + sign + pct.toFixed(0) + '%</span>');
+    }
+    return parts.join(' → ') + '&nbsp; (' + deltas.join(' · ') + ')';
+  }
+  function renderCalHist(dv){
+    if (dv.byteLength < 12) return;
+    const raw = [];
+    for (let i = 0; i < 6; i++) raw.push(dv.getInt16(i * 2, true) / 10);
+    $('calHistC1').innerHTML = formatCalHistRow(raw.slice(0, 3));
+    $('calHistC2').innerHTML = formatCalHistRow(raw.slice(3, 6));
   }
   function renderMbar(dv){
     if (dv.byteLength < 2) return;
