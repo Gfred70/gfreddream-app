@@ -100,7 +100,9 @@
   .fio2-display{
     font-family:var(--mono);font-size:44px;font-weight:700;color:var(--danger);
     font-variant-numeric:tabular-nums;text-align:center;margin:8px 0 16px;letter-spacing:.01em;
+    transition:color .15s;
   }
+  .fio2-display.std{color:var(--o2green);}
   .fio2-display .fio2-unit{font-size:16px;font-weight:500;color:var(--mist-dim);margin-left:7px;}
   .divider{height:1px;background:var(--line);margin:28px 0 0;}
 
@@ -157,7 +159,7 @@
   .calib-btn{
     width:100%;font-size:16px;font-weight:700;letter-spacing:.03em;padding:14px;
     justify-content:center;
-    background:var(--danger);border-color:var(--danger);color:#2A0A0A;
+    background:var(--danger);border-color:var(--danger);color:#FFFFFF;
   }
   .calib-btn:hover{background:#C93636;}
 
@@ -182,6 +184,10 @@
   /* ── connexion — minimale, sans carte ni texte, un seul bouton ──── */
   .connect-minimal{text-align:center;margin:20px 0 28px;}
   .connect-minimal .btn.primary{padding:13px 26px;font-size:14px;justify-content:center;}
+  .connect-hint{
+    margin:10px 0 0;font-family:var(--mono);font-size:11px;color:var(--mist-dim);
+    letter-spacing:.01em;
+  }
   .connect-minimal.unsupported{
     background:linear-gradient(180deg,var(--panel2),var(--panel));
     border:1px solid #5A2323;border-radius:14px;padding:22px 18px;text-align:center;
@@ -346,6 +352,7 @@
   <div id="connectSection" class="connect-minimal">
     <div id="connectCard">
       <button class="btn primary" id="connectBtn2">Connecter via Bluetooth</button>
+      <p class="connect-hint">FiO2 · pression de calibration · calibrage à distance · luminosités écran/HUD</p>
     </div>
   </div>
 
@@ -373,7 +380,7 @@
           <div class="warn-sub">À vérifier avant CHAQUE plongée — une erreur ici fausse directement ta PPO2 affichée.</div>
         </div>
       </div>
-      <div class="fio2-display"><span id="fio2Val">0.98</span><span class="fio2-unit">bar</span></div>
+      <div class="fio2-display std" id="fio2Display"><span id="fio2Val">0.98</span><span class="fio2-unit">bar</span></div>
       <input type="range" id="fio2Slider" min="0.20" max="1.00" step="0.01" value="0.98" aria-label="FiO2 de référence, de 0.20 à 1.00 bar">
       <div class="presets">
         <button class="preset-btn" data-fio2="0.21">Air · 0.21</button>
@@ -754,13 +761,19 @@
     renderMbar(mbarv);
   }
 
+  // Vert = 0.98 (standard, config A) ; rouge = toute autre valeur.
+  function setFio2Display(bar){
+    $('fio2Val').textContent = bar.toFixed(2);
+    $('fio2Display').classList.toggle('std', Math.abs(bar - 0.98) < 0.0005);
+  }
+
   function renderFio2(dv){
     if (dv.byteLength < 2) return;
     const raw = dv.getUint16(0, true);
     const bar = raw / 10000;
     suppressFio2Echo = true;
     $('fio2Slider').value = bar;
-    $('fio2Val').textContent = bar.toFixed(2);
+    setFio2Display(bar);
     suppressFio2Echo = false;
   }
   function renderBrit(dv){
@@ -896,7 +909,7 @@
   $('fio2Slider').addEventListener('input', e => {
     if (suppressFio2Echo) return;
     const bar = parseFloat(e.target.value);
-    $('fio2Val').textContent = bar.toFixed(2);   // aperçu seul, pas d'écriture
+    setFio2Display(bar);   // aperçu seul, pas d'écriture
   });
   $('fio2Slider').addEventListener('change', e => {
     if (suppressFio2Echo) return;
@@ -906,7 +919,7 @@
     btn.addEventListener('click', () => {
       const bar = parseFloat(btn.dataset.fio2);
       $('fio2Slider').value = bar;
-      $('fio2Val').textContent = bar.toFixed(2);
+      setFio2Display(bar);
       commitFio2(bar);
     });
   });
