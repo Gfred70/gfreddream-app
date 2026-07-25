@@ -1,8 +1,12 @@
 // ═══ GfredDream — service worker (usage hors-ligne) ═══════════════════
-// Stratégie : réseau d'abord (toujours la version la plus fraîche si tu es
-// en ligne), cache en secours si hors-ligne (carrière sans 4G). Le cache se
-// met à jour tout seul à chaque visite en ligne — pas besoin d'y toucher
-// après un simple upload GitHub.
+// Stratégie : cache d'abord (démarrage instantané, même hors-ligne), mise à
+// jour en tâche de fond dès que le réseau répond. Testé par Fred : sans le
+// réseau-d'abord d'origine, le démarrage hors-ligne prenait 15-20s (le temps
+// que fetch() échoue franchement avant de basculer sur le cache) — corrigé.
+//
+// Si t'es en ligne, tu as quand même toujours la dernière version : le cache
+// se met à jour en silence à chaque visite, tu la verras juste au prochain
+// chargement plutôt qu'instantanément (c'est le compromis du cache-d'abord).
 //
 // Si tu AJOUTES une nouvelle page/fichier à la liste ci-dessous, bump
 // CACHE_NAME (v1 → v2) pour forcer un cache propre chez tous les appareils
@@ -56,17 +60,24 @@ self.addEventListener('fetch', (event) => {
 
   // Web Bluetooth ne passe jamais par fetch (c'est une API à part), donc
   // aucun risque que ce service worker interfère avec la connexion BLE.
+  //
+  // Cache d'abord (réponse immédiate si déjà en cache — c'est ce qui rend
+  // le démarrage hors-ligne instantané au lieu d'attendre l'échec réseau),
+  // mise à jour en tâche de fond en même temps si le réseau répond. Si rien
+  // en cache (première visite jamais faite en ligne), on attend le réseau.
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        if (response && response.status === 200) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-        }
-        return response;
-      })
-      .catch(() =>
-        caches.match(event.request).then((cached) => cached || caches.match('index.html'))
-      )
+    caches.match(event.request).then((cached) => {
+      const networkFetch = fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          }
+          return response;
+        })
+        .catch(() => cached || caches.match('index.html'));
+
+      return cached || networkFetch;
+    })
   );
 });
