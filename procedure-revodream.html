@@ -49,19 +49,22 @@
       <li><b>4 push</b> — Reset : 4 flashs lents, puis vert clignotant rapide = OK, puis extinction.</li>
       <li><b>6 push</b> — Mode SCR : 6 flashs lents, confirmation, puis vert clignotant rapide = OK, puis extinction.</li>
     </ul>
-    <p style="font-size:12.5px;color:var(--mist-dim);margin:10px 0 0;">L'étape « adaptation seelevel » du 3 push est le point où la valeur d'altitude ci-dessous s'applique.</p>
+    <p style="font-size:12.5px;color:var(--mist-dim);margin:10px 0 0;">Après un 3 push réussi, le boîtier propose une calibration altitude (2 flashs des 3 LEDs) — voir la carte ci-dessous.</p>
   </div>
 
   <div class="card danger">
     <span class="tag">Altitude</span>
     <h2 style="color:var(--danger);">Calibration à l'altitude (mode B)</h2>
-    <p class="lead">Le rEvodream d'origine n'a pas de compensation d'altitude automatique — c'est la valeur de calibration elle-même qu'il faut adapter pour compenser la pression réelle.</p>
+    <p class="lead">Confirmé par le manuel rEvodream P/P5 (05/2018) : le boîtier n'a pas de capteur de pression atmosphérique. En calibration standard, il suppose <b>toujours</b> 1,00 bar ambiant + 100% O2, quelle que soit la réalité — et enregistre la tension du capteur comme correspondant à ppO2 = 1,00.</p>
     <ul>
-      <li><b>Mode A (standard, ≥ 930 mb)</b> — calibration au 3 push inchangée, valeur <b>0.98</b> comme toujours.</li>
-      <li><b>Mode B (altitude, &lt; 930 mb)</b> — utilise la valeur affichée dans la carte « Pression de calibration » de la PWA (calculée à partir du NOW Shearwater que tu viens de taper), au lieu de 0.98, dans l'étape « adaptation seelevel » du 3 push.</li>
+      <li>Rinçage O2 complet, comme toujours, avant de calibrer — même en altitude.</li>
+      <li><b>3 push</b> (boîtier éteint) → calibration normale de chaque cellule (comme d'habitude).</li>
+      <li>Une fois au moins une cellule calibrée avec succès, le boîtier propose la « calibration altitude » : les 3 LEDs flashent 2 fois (2FL).</li>
+      <li><b>Mode A (standard, ≥ 930 mb)</b> — ignore cette invite, la calibration standard suffit (référence 1,00 reste correcte à ~2% près).</li>
+      <li><b>Mode B (altitude, &lt; 930 mb)</b> — confirme l'invite par <b>1 push</b> pour entrer en mode calibration altitude (le boîtier confirme par la séquence orange&nbsp;→&nbsp;vert&nbsp;→&nbsp;rouge). Presse ensuite le piezo à répétition pour <b>faire baisser</b> la valeur affichée jusqu'à la cible ci-dessous, puis attends 2 secondes sans toucher : le vert clignote vite = enregistré.</li>
     </ul>
-    <p style="font-size:12.5px;color:var(--mist-dim);margin:10px 0 0;">Formule : 0.98 × (pression NOW / 1013). Compense le fait que le rEvodream calcule toujours comme si tu étais à 1013 mb — en indiquant une valeur plus basse à la calibration, le résultat final reste juste malgré la pression réelle plus faible.</p>
-    <p style="font-size:12.5px;color:var(--warn);margin:8px 0 0;">Valeur affichée à titre indicatif par la PWA — vérifie-la une fois calmement avant de t'y fier en plongée réelle.</p>
+    <p style="font-size:12.5px;color:var(--mist-dim);margin:10px 0 0;">Formule exacte du manuel (exemple officiel : 970 mb + O2 à 98% → cible 0,95) : <b>cible ppO2 = (pression NOW en bar) × 0,98</b>, soit <code>NOW mbar / 1000 × 0,98</code>. Le rEvodream raisonne en bar plein (1,00 bar), pas en 1013 mb — la PWA utilise bien cette base-là, pas la base 1013 utilisée pour le GfredDream lui-même.</p>
+    <p style="font-size:12.5px;color:var(--warn);margin:8px 0 0;">Cette cible est répétée pour la 2ᵉ cellule si les deux sont calibrées — même valeur pour les deux.</p>
   </div>
 
   <div class="card">

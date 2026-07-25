@@ -366,7 +366,7 @@
     <div class="card connect-card" id="connectCard">
       <div class="eyebrow">Bluetooth</div>
       <h2>Relie ton GfredDream</h2>
-      <p>Ouvre le capot Bluetooth de l'appareil, puis appuie sur Connecter. Réglages FiO2 et luminosité en direct une fois relié.</p>
+      <p>Ouvre le capot Bluetooth de l'appareil, puis appuie sur Connecter. Réglages FiO2, pression de calibration, luminosité et calibrage à distance en direct une fois relié.</p>
       <button class="btn primary" id="connectBtn2">Connecter via Bluetooth</button>
     </div>
   </section>
@@ -425,10 +425,10 @@
       </div>
 
       <div class="revodream-cal" id="revodreamCal" hidden>
-        Calibration revodream à <b id="revodreamCalVal">0.98</b> (mode B — au 3 push, étape « adaptation seelevel »)
+        Calibration altitude revodream : baisser jusqu'à <b id="revodreamCalVal">0.98</b> ppO2 (piezo, après le 3 push)
         — <a href="procedure-revodream.html">marche à suivre →</a>
       </div>
-      <div class="revodream-cal-a" id="revodreamCalA">Mode A : revodream reste à <b>0.98</b>, calibration standard inchangée.</div>
+      <div class="revodream-cal-a" id="revodreamCalA">Mode A : pas de calibration altitude sur le revodream, 3 push normal suffit.</div>
 
       <p class="hint" style="margin:12px 0 0;">Écriture immédiate — invalide ta calibration en cours (HUD éteint, tirets) jusqu'à un nouveau calibrage.</p>
 
@@ -815,10 +815,16 @@
     } else {
       dot.className = 'verdict-dot ko';
       txt.textContent = 'KO · config B → écrit la valeur saisie';
-      // Le rEvodream d'origine n'a pas de compensation d'altitude : on lui
-      // indique une valeur de calibration abaissée pour compenser la
-      // pression réelle plus faible. Formule : 0.98 × (NOW / 1013).
-      const revoVal = (0.98 * (v / 1013)).toFixed(2);
+      // Le rEvodream d'origine n'a pas de compensation d'altitude : sa
+      // calibration standard suppose TOUJOURS 1,00 bar ambiant + 100% O2
+      // (confirmé manuel P/P5 05/2018). En calibration altitude (2FL après
+      // le 3 push, confirmée par 1P), on presse le piezo pour faire
+      // DESCENDRE la valeur affichée jusqu'à cette cible ppO2 — PAS un FiO2
+      // à taper. Formule exacte du manuel (leur exemple officiel : 970 mb +
+      // O2 98% → cible 0,95) : cible = (NOW/1000) × 0,98. Base 1000 (1 bar
+      // plein), PAS 1013 — le rEvodream raisonne en bar entier, contrairement
+      // au GfredDream qui utilise 1013 (ISA) pour sa propre formule PPO2.
+      const revoVal = (0.98 * (v / 1000)).toFixed(2);
       $('revodreamCalVal').textContent = revoVal;
       $('revodreamCal').hidden = false;
       $('revodreamCalA').hidden = true;
