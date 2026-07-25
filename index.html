@@ -49,6 +49,11 @@
   .brand-text{font-weight:700;letter-spacing:.06em;font-size:15px;}
   .brand-sub{display:block;font-family:var(--mono);font-weight:400;font-size:10px;color:var(--mist-dim);letter-spacing:.08em;margin-top:1px;}
   .status-dot{width:8px;height:8px;border-radius:50%;background:var(--mist-dim);flex:none;transition:background .3s,box-shadow .3s;}
+  .status-chip{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:var(--disp);font-weight:600;font-size:13px;color:var(--mist-dim);
+    padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);
+  }
   .status-dot.up{background:var(--o2green);box-shadow:0 0 8px var(--o2green);}
   .status-dot.busy{background:var(--brass);animation:pulse 1s ease-in-out infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
@@ -148,7 +153,12 @@
 
   /* ── Calibrer à distance ────────────────────────────────────────────*/
   .calib-card-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;}
-  .calib-btn{width:100%;font-size:16px;font-weight:700;letter-spacing:.03em;padding:14px;}
+  .calib-btn{
+    width:100%;font-size:16px;font-weight:700;letter-spacing:.03em;padding:14px;
+    justify-content:center;
+    background:var(--danger);border-color:var(--danger);color:#2A0A0A;
+  }
+  .calib-btn:hover{background:#C93636;}
 
   /* ── Réinitialiser — plus grand, centré ─────────────────────────────*/
   .reset-row{flex-direction:column;align-items:center;gap:8px;}
@@ -168,12 +178,15 @@
   }
   .revodream-cal-a b{color:var(--mist);}
 
-  /* ── connect empty state ────────────────────────────── */
-  .connect-card{
-    text-align:center;padding:34px 20px;
+  /* ── connexion — minimale, sans carte ni texte, un seul bouton ──── */
+  .connect-minimal{text-align:center;margin:20px 0 28px;}
+  .connect-minimal .btn.primary{padding:13px 26px;font-size:14px;justify-content:center;}
+  .connect-minimal.unsupported{
+    background:linear-gradient(180deg,var(--panel2),var(--panel));
+    border:1px solid #5A2323;border-radius:14px;padding:22px 18px;text-align:center;
   }
-  .connect-card p{color:var(--mist-dim);font-size:13.5px;line-height:1.6;max-width:38ch;margin:10px auto 20px;}
-  .unsupported{border-color:#5A2323;}
+  .connect-minimal.unsupported h2{font-size:15px;margin:0 0 8px;}
+  .connect-minimal.unsupported p{color:var(--mist-dim);font-size:13px;line-height:1.6;max-width:38ch;margin:0 auto;}
 
   /* ── live control rows ──────────────────────────────── */
   .ctrl{margin-bottom:22px;}
@@ -322,20 +335,18 @@
         <span class="brand-sub" id="subStatus">déconnecté</span>
       </span>
     </div>
-    <button class="btn" id="connectBtn"><span class="status-dot" id="statusDot"></span><span id="connectLabel">Connecter</span></button>
+    <div class="status-chip" id="statusChip"><span class="status-dot" id="statusDot"></span><span id="connectLabel">Déconnecté</span></div>
   </div>
 </header>
 
 <div class="wrap">
 
   <!-- ═══ CONNEXION ═══ -->
-  <section id="connectSection">
-    <div class="card connect-card" id="connectCard">
-      <h2>Connexion au GfredDream</h2>
-      <p>Ouvre le capot Bluetooth de l'appareil, puis appuie sur Connecter. Réglages FiO2, pression de calibration, luminosité et calibrage à distance en direct une fois relié.</p>
+  <div id="connectSection" class="connect-minimal">
+    <div id="connectCard">
       <button class="btn primary" id="connectBtn2">Connecter via Bluetooth</button>
     </div>
-  </section>
+  </div>
 
   <!-- ═══ RÉGLAGES (live BLE) ═══ -->
   <section id="liveSection" hidden>
@@ -651,19 +662,20 @@
 
   const $ = id => document.getElementById(id);
   const statusDot = $('statusDot'), subStatus = $('subStatus'), connectLabel = $('connectLabel');
+  const connectBtn2 = $('connectBtn2');
 
   function setStatus(state, label){
     statusDot.className = 'status-dot' + (state ? ' ' + state : '');
     subStatus.textContent = label;
+    connectLabel.textContent = state === 'up' ? 'Connecté' : state === 'busy' ? 'Connexion…' : 'Déconnecté';
   }
 
   // ── Web Bluetooth support check ────────────────────────────────────
   if (!navigator.bluetooth) {
-    $('connectCard').classList.add('unsupported');
-    $('connectCard').querySelector('h2').textContent = 'Ce navigateur ne supporte pas Web Bluetooth';
-    $('connectCard').querySelector('p').textContent = 'Ouvre cette page dans Chrome (Android ou ordinateur). Safari et les navigateurs iOS ne peuvent pas parler en Bluetooth à une page web.';
-    $('connectBtn2').remove();
-    $('connectBtn').disabled = true;
+    $('connectSection').classList.add('unsupported');
+    $('connectCard').innerHTML =
+      '<h2>Ce navigateur ne supporte pas Web Bluetooth</h2>' +
+      '<p>Ouvre cette page dans Chrome (Android ou ordinateur). Safari et les navigateurs iOS ne peuvent pas parler en Bluetooth à une page web.</p>';
   }
 
   async function connect(){
@@ -695,21 +707,19 @@
       chars.calib.addEventListener('characteristicvaluechanged', e => renderCalib(e.target.value));
 
       setStatus('up', device.name || 'connecté');
-      connectLabel.textContent = 'Déconnecter';
-      $('connectSection').hidden = true;
+      connectBtn2.textContent = 'Déconnecter';
       $('liveSection').hidden = false;
     } catch (err) {
       console.error(err);
       setStatus('', 'déconnecté');
-      connectLabel.textContent = 'Connecter';
+      connectBtn2.textContent = 'Connecter via Bluetooth';
       if (err.name !== 'NotFoundError') alert('Connexion impossible : ' + err.message);
     }
   }
 
   function onDisconnected(){
     setStatus('', 'déconnecté');
-    connectLabel.textContent = 'Connecter';
-    $('connectSection').hidden = false;
+    connectBtn2.textContent = 'Connecter via Bluetooth';
     $('liveSection').hidden = true;
     chars = {};
   }
@@ -719,10 +729,9 @@
     onDisconnected();
   }
 
-  $('connectBtn').addEventListener('click', () => {
+  connectBtn2.addEventListener('click', () => {
     if (device && device.gatt.connected) disconnect(); else connect();
   });
-  $('connectBtn2').addEventListener('click', connect);
 
   // ── read + render current state ─────────────────────────────────
   async function readAll(){
