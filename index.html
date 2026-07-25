@@ -156,12 +156,12 @@
 
   /* ── Calibrer à distance ────────────────────────────────────────────*/
   .calib-card-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;}
-  .calib-btn{
+  .btn.calib-btn{
     width:100%;font-size:16px;font-weight:700;letter-spacing:.03em;padding:14px;
     justify-content:center;
     background:var(--danger);border-color:var(--danger);color:#FFFFFF;
   }
-  .calib-btn:hover{background:#C93636;}
+  .btn.calib-btn:hover{background:#C93636;}
 
   /* ── Réinitialiser — plus grand, centré ─────────────────────────────*/
   .reset-row{flex-direction:column;align-items:center;gap:8px;}
@@ -352,7 +352,7 @@
   <div id="connectSection" class="connect-minimal">
     <div id="connectCard">
       <button class="btn primary" id="connectBtn2">Connecter via Bluetooth</button>
-      <p class="connect-hint">FiO2 · pression de calibration · calibrage à distance · luminosités écran/HUD</p>
+      <p class="connect-hint">FiO2 · plongée altitude · calibrage à distance · luminosités écran/HUD</p>
     </div>
   </div>
 
@@ -392,7 +392,7 @@
       <div class="warn-head">
         <span class="warn-icon">⚠️</span>
         <div>
-          <div class="warn-title">Pression de calibration</div>
+          <div class="warn-title">Plongée altitude</div>
           <div class="warn-sub">À vérifier avant chaque plongée — recopie le <b>NOW</b> du Shearwater (la pression réelle, pas le SeaLvl).</div>
         </div>
       </div>
