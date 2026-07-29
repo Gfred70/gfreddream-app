@@ -106,6 +106,30 @@
   .fio2-display .fio2-unit{font-size:16px;font-weight:500;color:var(--mist-dim);margin-left:7px;}
   .divider{height:1px;background:var(--line);margin:28px 0 0;}
 
+  /* ── Carte pression hors connexion (v6.1.0) ───────────*/
+  .mbar-offline{font-size:11px;line-height:1.45;color:var(--mist-dim);margin-top:12px;}
+  .mbar-offline b{color:var(--brass);}
+  .mbar-connect{width:100%;margin-top:12px;}
+  body:not(.ble-on) .blegated{display:none;}
+  body.ble-on .mbar-offline{display:none;}
+  /* ── LEDs HUD par couleur (v6.1.0) ─────────────────────*/
+  .hud-note{font-size:11px;line-height:1.45;color:var(--mist-dim);margin-bottom:14px;}
+  .hud-note b{color:var(--brass);}
+  .ledrow{display:flex;align-items:center;gap:10px;margin-top:14px;}
+  .led-dot{width:12px;height:12px;border-radius:50%;flex:none;}
+  .dot-r{background:#e03e3e;box-shadow:0 0 8px #e03e3e;}
+  .dot-g{background:#3ec46d;box-shadow:0 0 8px #3ec46d;}
+  .dot-o{background:#e8a33d;box-shadow:0 0 8px #e8a33d;}
+  .led-name{font-size:13px;flex:1;}
+  .led-val{font-family:var(--mono);font-size:15px;min-width:56px;text-align:center;color:var(--brass);}
+  .led-minus,.led-plus{min-width:44px;min-height:44px;}
+  .hudtest-btn{width:100%;margin-top:8px;}
+  .hudtest-btn.on{background:var(--brass);color:#1a1a1a;}
+  /* ── Session (v6.1.0) ──────────────────────────────────*/
+  .sess-row{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;
+            border-bottom:1px solid rgba(255,255,255,.06);}
+  .sess-row:last-child{border-bottom:none;}
+  .sess-row span:last-child{font-family:var(--mono);color:var(--brass);}
   /* ── Pression de calibration ───────────────────────────*/
   .mbar-input{
     font-family:var(--mono);font-size:22px;font-weight:700;color:var(--mist);
@@ -367,6 +391,61 @@
 <div class="wrap">
 
   <!-- ═══ CONNEXION ═══ -->
+  <!-- v6.1.0 — La carte pression remonte AVANT le bouton de connexion et
+       sort de liveSection. Retour Insenborn : Fred a dû se connecter en
+       BT juste pour répondre à une question dont la logique est purement
+       locale (NOW >= 930 -> config A). Or la vérification ne demande
+       aucun device : la décision est de l'arithmétique, et le RELEVÉ est
+       déjà lisible sur l'appareil (vaguelettes/montagnes sur E3-E4-CA2).
+       Seule l'ÉCRITURE, en config B, exige le BLE. C'est donc la carte
+       qui décide s'il faut se connecter : elle passe devant le bouton. -->
+    <div class="card warn-card">
+      <div class="warn-head">
+        <span class="warn-icon">⚠️</span>
+        <div>
+          <div class="warn-title">Plongée altitude</div>
+          <div class="warn-sub">À vérifier avant chaque plongée — recopie le <b>NOW</b> du Shearwater (la pression réelle, pas le SeaLvl).</div>
+        </div>
+      </div>
+
+      <span class="field-lbl">NOW Shearwater</span>
+      <input type="number" inputmode="numeric" id="mbarInput" class="mbar-input"
+             min="700" max="1080" step="1" value="1013"
+             aria-label="Pression NOW lue sur le Shearwater, en millibars">
+      <div class="mbar-alt" id="mbarAlt">≈ 0 m (indicatif, base 1013 mb = 0 m)</div>
+      <div class="mbar-zone-hint">Zone standard ≥ 930 mb · 1080 mb = simple limite de saisie (anti-faute-de-frappe, ne décide de rien)</div>
+
+      <div class="verdict-row" id="mbarVerdictRow">
+        <span class="verdict-dot ok" id="mbarVerdictDot"></span>
+        <span class="verdict-text" id="mbarVerdictText">OK · config A → écrit 1013</span>
+      </div>
+
+      <div class="revodream-cal" id="revodreamCal" hidden>
+        Calibration altitude revodream : baisser jusqu'à <b id="revodreamCalVal">0.98</b> ppO2 (piezo, après le 3 push)
+        — <a href="procedure-revodream.html">marche à suivre →</a>
+      </div>
+      <div class="revodream-cal-a" id="revodreamCalA">Mode A : pas de calibration altitude sur le revodream, 3 push normal suffit.</div>
+
+      <p class="hint blegated" style="margin:12px 0 0;">Écriture immédiate — invalide ta calibration en cours (HUD éteint, tirets) jusqu'à un nouveau calibrage.</p>
+
+      <div class="mbar-device blegated" id="mbarDevice">Sur l'appareil : <b id="mbarDeviceVal">—</b></div>
+      <div class="mbar-offline" id="mbarOffline">
+        Pas besoin de te connecter pour vérifier : l'appareil affiche lui-même sa config —
+        <b>vaguelettes bleues</b> = A, <b>montagnes orange</b> = B, sur E3, E4 et CA2.
+      </div>
+      <button class="btn primary mbar-connect" id="mbarConnectBtn" type="button" hidden>
+        Connecter pour écrire la pression
+      </button>
+
+      <details class="mbar-conv">
+        <summary>Convertisseur mètres → mbar (approximatif)</summary>
+        <div class="conv-row">
+          <input type="number" id="mbarConvM" placeholder="altitude en m" inputmode="numeric">
+          <span id="mbarConvResult">→ — mb</span>
+        </div>
+      </details>
+    </div>
+
   <div id="connectSection" class="connect-minimal">
     <div id="connectCard">
       <button class="btn primary" id="connectBtn2">Connecter via Bluetooth</button>
@@ -418,45 +497,6 @@
       </div>
     </div>
 
-    <div class="card warn-card">
-      <div class="warn-head">
-        <span class="warn-icon">⚠️</span>
-        <div>
-          <div class="warn-title">Plongée altitude</div>
-          <div class="warn-sub">À vérifier avant chaque plongée — recopie le <b>NOW</b> du Shearwater (la pression réelle, pas le SeaLvl).</div>
-        </div>
-      </div>
-
-      <span class="field-lbl">NOW Shearwater</span>
-      <input type="number" inputmode="numeric" id="mbarInput" class="mbar-input"
-             min="700" max="1080" step="1" value="1013"
-             aria-label="Pression NOW lue sur le Shearwater, en millibars">
-      <div class="mbar-alt" id="mbarAlt">≈ 0 m (indicatif, base 1013 mb = 0 m)</div>
-      <div class="mbar-zone-hint">Zone standard ≥ 930 mb · 1080 mb = simple limite de saisie (anti-faute-de-frappe, ne décide de rien)</div>
-
-      <div class="verdict-row" id="mbarVerdictRow">
-        <span class="verdict-dot ok" id="mbarVerdictDot"></span>
-        <span class="verdict-text" id="mbarVerdictText">OK · config A → écrit 1013</span>
-      </div>
-
-      <div class="revodream-cal" id="revodreamCal" hidden>
-        Calibration altitude revodream : baisser jusqu'à <b id="revodreamCalVal">0.98</b> ppO2 (piezo, après le 3 push)
-        — <a href="procedure-revodream.html">marche à suivre →</a>
-      </div>
-      <div class="revodream-cal-a" id="revodreamCalA">Mode A : pas de calibration altitude sur le revodream, 3 push normal suffit.</div>
-
-      <p class="hint" style="margin:12px 0 0;">Écriture immédiate — invalide ta calibration en cours (HUD éteint, tirets) jusqu'à un nouveau calibrage.</p>
-
-      <div class="mbar-device" id="mbarDevice">Sur l'appareil : <b id="mbarDeviceVal">—</b></div>
-
-      <details class="mbar-conv">
-        <summary>Convertisseur mètres → mbar (approximatif)</summary>
-        <div class="conv-row">
-          <input type="number" id="mbarConvM" placeholder="altitude en m" inputmode="numeric">
-          <span id="mbarConvResult">→ — mb</span>
-        </div>
-      </details>
-    </div>
 
     <div class="card">
       <div class="ctrl">
@@ -468,24 +508,57 @@
       </div>
 
       <div class="ctrl">
-        <div class="ctrl-top">
-          <span class="ctrl-label">Luminosité LED HUD</span>
-          <span class="ctrl-value"><span id="hudbrtVal">100</span>%</span>
+        <div class="ctrl-label" style="margin-bottom:6px;">Luminosité LED HUD</div>
+        <div class="hud-note">Réglage par LED. Le rouge doit être <b>nettement au-dessus</b> du vert :
+        en zone 1.40–1.55 il clignote par-dessus un vert allumé fixe, et l'œil est ~3× moins
+        sensible au rouge. Le rEvodream d'à côté n'est pas réglable — c'est lui la référence.</div>
+
+        <div class="ledrow" data-led="r">
+          <span class="led-dot dot-r"></span>
+          <span class="led-name">Rouge</span>
+          <button class="stepper-btn led-minus" type="button" aria-label="Rouge moins 0.1 %">−</button>
+          <span class="led-val"><span class="led-num" id="ledRVal">4.0</span>%</span>
+          <button class="stepper-btn led-plus" type="button" aria-label="Rouge plus 0.1 %">+</button>
         </div>
-        <input type="range" id="hudbrtSlider" min="0" max="100" step="1" value="100" aria-label="Luminosité LED HUD, de 0 à 100 pourcent">
-        <div class="stepper-row">
-          <button class="stepper-btn" id="hudbrtMinus" type="button" aria-label="Diminuer de 1 pourcent">−</button>
-          <div class="stepper-hint">1 tap = 1%</div>
-          <button class="stepper-btn" id="hudbrtPlus" type="button" aria-label="Augmenter de 1 pourcent">+</button>
+        <input type="range" id="ledRSlider" min="0" max="200" step="1" value="40" aria-label="Luminosité LED rouge">
+
+        <div class="ledrow" data-led="g">
+          <span class="led-dot dot-g"></span>
+          <span class="led-name">Vert</span>
+          <button class="stepper-btn led-minus" type="button" aria-label="Vert moins 0.1 %">−</button>
+          <span class="led-val"><span class="led-num" id="ledGVal">2.0</span>%</span>
+          <button class="stepper-btn led-plus" type="button" aria-label="Vert plus 0.1 %">+</button>
         </div>
-        <div class="presets">
-          <button class="preset-btn" data-hudbrt="1">1%</button>
-          <button class="preset-btn" data-hudbrt="2">2%</button>
-          <button class="preset-btn" data-hudbrt="3">3%</button>
-          <button class="preset-btn" data-hudbrt="5">5%</button>
-          <button class="preset-btn" data-hudbrt="10">10%</button>
+        <input type="range" id="ledGSlider" min="0" max="200" step="1" value="20" aria-label="Luminosité LED verte">
+
+        <div class="ledrow" data-led="o">
+          <span class="led-dot dot-o"></span>
+          <span class="led-name">Orange</span>
+          <button class="stepper-btn led-minus" type="button" aria-label="Orange moins 0.1 %">−</button>
+          <span class="led-val"><span class="led-num" id="ledOVal">2.0</span>%</span>
+          <button class="stepper-btn led-plus" type="button" aria-label="Orange plus 0.1 %">+</button>
+        </div>
+        <input type="range" id="ledOSlider" min="0" max="200" step="1" value="20" aria-label="Luminosité LED orange">
+
+        <div class="stepper-hint" style="text-align:center;margin:10px 0 4px;">
+          Curseurs = 0 à 20 % · boutons ± = 0,1 % par tap
+        </div>
+        <button class="btn hudtest-btn" id="hudTestBtn" type="button">Test HUD — 3 LED, 5 s</button>
+        <div class="stepper-hint" style="text-align:center;margin-top:6px;">
+          Fonctionne aussi cellules débranchées (écran d'urgence)
         </div>
       </div>
+    </div>
+
+    <div class="card">
+      <div class="ctrl-label" style="margin-bottom:10px;">Session en cours</div>
+      <div class="sess-row"><span>Durée sous tension</span><span id="sessDur">—</span></div>
+      <div class="sess-row"><span>Tension mini vue</span><span id="sessVmin">—</span></div>
+      <div class="sess-row"><span>Tension maxi vue</span><span id="sessVmax">—</span></div>
+      <div class="sess-row"><span>Temps de frame</span><span id="sessFrame">—</span></div>
+      <p class="hint" style="margin:12px 0 0;">Repart de zéro à chaque coupure. À lire au retour
+      à la voiture : c'est la durée réelle sous tension, celle qu'aucun test de banc ne donne.
+      Budget de frame 41 ms — au-delà, le FPS descend seul.</p>
     </div>
 
     <div class="card">
@@ -678,6 +751,9 @@
   const CALIB = '12340008-0000-0000-0000-000000000000';
   const RESET = '12340009-0000-0000-0000-000000000000';
   const HUDBRT= '1234000b-0000-0000-0000-000000000000';
+  const HUDRGB= '1234000f-0000-0000-0000-000000000000';   // v6.1.0 — 3×uint16, dixièmes de %
+  const HUDTST= '12340010-0000-0000-0000-000000000000';   // v6.1.0 — 0x01 = test 5s
+  const SESSN = '12340011-0000-0000-0000-000000000000';   // v6.1.0 — durée + Vmin/Vmax + frame
   const MBAR  = '1234000c-0000-0000-0000-000000000000';
   const CALTRIG = '1234000d-0000-0000-0000-000000000000';
   const CALHIST = '1234000e-0000-0000-0000-000000000000';
@@ -709,7 +785,25 @@
     statusChip.className = 'status-chip' + (state ? ' ' + state : '');
     subStatus.textContent = label;
     connectLabel.textContent = state === 'up' ? 'Connecté' : state === 'busy' ? 'Connexion…' : 'Déconnecté';
+    // v6.1.0 — pilote l'affichage des éléments qui exigent réellement le BLE
+    // (écriture pression, relevé "sur l'appareil"). Le reste de la carte
+    // pression, lui, reste visible et utilisable hors connexion.
+    document.body.classList.toggle('ble-on', state === 'up');
+    updateMbarConnectBtn();
   }
+  // Le bouton n'apparaît QUE si on est déconnecté ET en config B : c'est le
+  // seul cas où le téléphone sert encore à quelque chose.
+  function updateMbarConnectBtn(){
+    const b = $('mbarConnectBtn');
+    if (!b) return;
+    const v = parseInt($('mbarInput').value, 10);
+    const needB = !isNaN(v) && v < MBAR_STANDARD_THRESHOLD;
+    b.hidden = document.body.classList.contains('ble-on') || !needB;
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    const b = $('mbarConnectBtn');
+    if (b) b.addEventListener('click', () => connect());
+  });
 
   // ── Web Bluetooth support check ────────────────────────────────────
   if (!navigator.bluetooth) {
@@ -732,6 +826,11 @@
       chars.fio2  = await service.getCharacteristic(FIO2);
       chars.brit  = await service.getCharacteristic(BRIT);
       chars.hudbrt= await service.getCharacteristic(HUDBRT);
+      // v6.1.0 — tolérant : un device encore en v6.0.0 n'a pas ces trois
+      // caractéristiques, la PWA doit rester utilisable sans elles.
+      try { chars.hudrgb = await service.getCharacteristic(HUDRGB); } catch(e){ chars.hudrgb = null; }
+      try { chars.hudtst = await service.getCharacteristic(HUDTST); } catch(e){ chars.hudtst = null; }
+      try { chars.sess   = await service.getCharacteristic(SESSN);  } catch(e){ chars.sess   = null; }
       chars.batt  = await service.getCharacteristic(BATT);
       chars.cell  = await service.getCharacteristic(CELL);
       chars.calib = await service.getCharacteristic(CALIB);
@@ -749,6 +848,10 @@
       chars.calib.addEventListener('characteristicvaluechanged', e => renderCalib(e.target.value));
       await chars.calhist.startNotifications();
       chars.calhist.addEventListener('characteristicvaluechanged', e => renderCalHist(e.target.value));
+      if (chars.sess) {
+        await chars.sess.startNotifications();
+        chars.sess.addEventListener('characteristicvaluechanged', e => renderSession(e.target.value));
+      }
 
       setStatus('up', device.name || 'connecté');
       connectBtn2.textContent = 'Déconnecter';
@@ -783,8 +886,19 @@
     renderFio2(fio2v);
     const britv = await chars.brit.readValue();
     renderBrit(britv);
-    const hudv = await chars.hudbrt.readValue();
-    renderHud(hudv);
+    // v6.1.0 — les 3 luminosités LED remplacent l'ancienne valeur unique.
+    // Repli sur hudbrt si le device est encore en v6.0.0.
+    if (chars.hudrgb) {
+      renderHudRGB(await chars.hudrgb.readValue());
+    } else {
+      const hv = await chars.hudbrt.readValue();
+      if (hv.byteLength >= 1) {
+        const t = hv.getUint8(0) * 10;
+        ledVals = { r:t, g:t, o:t };
+        ['r','g','o'].forEach(paintLed);
+      }
+    }
+    if (chars.sess) renderSession(await chars.sess.readValue());
     const battv = await chars.batt.readValue();
     renderBatt(battv);
     const cellv = await chars.cell.readValue();
@@ -820,13 +934,40 @@
     $('britVal').textContent = v;
     suppressBritEcho = false;
   }
-  function renderHud(dv){
-    if (dv.byteLength < 1) return;
-    const v = dv.getUint8(0);
+  // v6.1.0 — 3 luminosités LED, en dixièmes de % (0-1000)
+  const LED_KEYS = { r:'ledR', g:'ledG', o:'ledO' };
+  let ledVals = { r:40, g:20, o:20 };
+  function paintLed(k){
+    const v = ledVals[k];
+    $(LED_KEYS[k] + 'Val').textContent = (v/10).toFixed(1);
+    const sl = $(LED_KEYS[k] + 'Slider');
+    if (parseInt(sl.value,10) !== v) sl.value = Math.min(200, v);
+  }
+  function renderHudRGB(dv){
+    if (!dv || dv.byteLength < 6) return;
     suppressHudEcho = true;
-    $('hudbrtSlider').value = v;
-    $('hudbrtVal').textContent = v;
+    ledVals.r = dv.getUint16(0, true);
+    ledVals.g = dv.getUint16(2, true);
+    ledVals.o = dv.getUint16(4, true);
+    ['r','g','o'].forEach(paintLed);
     suppressHudEcho = false;
+  }
+  // v6.1.0 — télémétrie de session. Fred se reconnecte au retour à la
+  // voiture et lit sa durée réelle sous tension : c'est le chiffre qu'aucun
+  // test de banc ne peut donner.
+  function renderSession(dv){
+    if (!dv || dv.byteLength < 10) return;
+    const secs = dv.getUint32(0, true);
+    const vmin = dv.getUint16(4, true) / 100;
+    const vmax = dv.getUint16(6, true) / 100;
+    const fr   = dv.getUint16(8, true) / 10;
+    const h = Math.floor(secs/3600), m = Math.floor((secs%3600)/60);
+    $('sessDur').textContent  = h + ' h ' + String(m).padStart(2,'0');
+    $('sessVmin').textContent = vmin > 0 ? vmin.toFixed(2) + ' V' : '—';
+    $('sessVmax').textContent = vmax > 0 ? vmax.toFixed(2) + ' V' : '—';
+    $('sessFrame').textContent = fr > 0 ? fr.toFixed(1) + ' ms' : '—';
+    // Budget de frame = 41 ms. Au-delà, le FPS descend tout seul.
+    $('sessFrame').style.color = (fr > 41) ? '#e8a33d' : '';
   }
   function renderBatt(dv){
     if (dv.byteLength < 1) return;
@@ -890,6 +1031,7 @@
 
   // ── Verdict + altitude indicative, recalculés à chaque frappe ────────
   function updateMbarUI(rawValue){
+    if (typeof updateMbarConnectBtn === 'function') updateMbarConnectBtn();
     const v = Math.round(rawValue);
     const alt = Math.round(altitudeFromMbar(v));
     $('mbarAlt').textContent = '≈ ' + alt + ' m (indicatif, base 1013 mb = 0 m)';
@@ -937,6 +1079,17 @@
   const writeHud = debounce(async (v) => {
     if (!chars.hudbrt) return;
     await chars.hudbrt.writeValue(Uint8Array.of(v));
+  }, 200);
+  // v6.1.0 — les 3 valeurs partent ensemble (6 octets) : le firmware
+  // rejette la trame entière si l'une est hors bornes, donc jamais
+  // d'application partielle qui ferait diverger PWA et device.
+  const writeLeds = debounce(async () => {
+    if (!chars.hudrgb) return;
+    const buf = new ArrayBuffer(6), dv = new DataView(buf);
+    dv.setUint16(0, ledVals.r, true);
+    dv.setUint16(2, ledVals.g, true);
+    dv.setUint16(4, ledVals.o, true);
+    await chars.hudrgb.writeValue(buf);
   }, 200);
   // Seuil unique 930 : >=930 -> écrit 1013 (config A) ; <930 -> écrit la valeur
   // saisie telle quelle (config B). 700-1080 = clamp anti-faute-de-frappe,
@@ -992,25 +1145,34 @@
     $('britVal').textContent = v;
     writeBrit(v);
   });
-  $('hudbrtSlider').addEventListener('input', e => {
-    if (suppressHudEcho) return;
-    setHud(parseInt(e.target.value, 10));
+  // ── v6.1.0 — 3 LEDs : curseurs (pas de 0.1 %) + boutons ± ──────────
+  ['r','g','o'].forEach(k => {
+    $(LED_KEYS[k] + 'Slider').addEventListener('input', e => {
+      if (suppressHudEcho) return;
+      setLed(k, parseInt(e.target.value, 10));
+    });
   });
-  function setHud(v){
-    v = Math.max(0, Math.min(100, v));
-    $('hudbrtSlider').value = v;
-    $('hudbrtVal').textContent = v;
-    writeHud(v);
+  document.querySelectorAll('.ledrow').forEach(row => {
+    const k = row.dataset.led;
+    row.querySelector('.led-minus').addEventListener('click', () => setLed(k, ledVals[k] - 1));
+    row.querySelector('.led-plus') .addEventListener('click', () => setLed(k, ledVals[k] + 1));
+  });
+  function setLed(k, v){
+    ledVals[k] = Math.max(0, Math.min(1000, v));
+    paintLed(k);
+    writeLeds();
   }
-  $('hudbrtMinus').addEventListener('click', () => {
-    setHud(parseInt($('hudbrtSlider').value, 10) - 1);
+  $('hudTestBtn').addEventListener('click', async () => {
+    if (!chars.hudtst) return;
+    const b = $('hudTestBtn');
+    try {
+      await chars.hudtst.writeValue(Uint8Array.of(0x01));
+      b.classList.add('on'); b.textContent = 'Test en cours…';
+      setTimeout(() => { b.classList.remove('on'); b.textContent = 'Test HUD — 3 LED, 5 s'; }, 5000);
+    } catch(e) { /* device déconnecté : le bouton reprend son état seul */ }
   });
-  $('hudbrtPlus').addEventListener('click', () => {
-    setHud(parseInt($('hudbrtSlider').value, 10) + 1);
-  });
-  document.querySelectorAll('[data-hudbrt]').forEach(btn => {
-    btn.addEventListener('click', () => setHud(parseInt(btn.dataset.hudbrt, 10)));
-  });
+
+
   $('mbarInput').addEventListener('input', e => {
     if (suppressMbarEcho) return;
     const v = parseFloat(e.target.value);

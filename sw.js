@@ -12,7 +12,7 @@
 // CACHE_NAME (v1 → v2) pour forcer un cache propre chez tous les appareils
 // déjà installés ; sinon les anciens caches ne se videraient jamais.
 
-const CACHE_NAME = 'gfreddream-v1';
+const CACHE_NAME = 'gfreddream-v2';
 
 const PRECACHE_URLS = [
   './',
