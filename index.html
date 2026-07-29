@@ -566,7 +566,7 @@
       <div class="telem">
         <div class="telem-cell">
           <div class="num" id="battVal">—</div>
-          <div class="lbl">Batterie</div>
+          <div class="lbl" id="battLbl">Batterie</div>
         </div>
         <div class="telem-cell">
           <div class="num" id="battVoltVal">—</div>
@@ -969,9 +969,26 @@
     // Budget de frame = 41 ms. Au-delà, le FPS descend tout seul.
     $('sessFrame').style.color = (fr > 41) ? '#e8a33d' : '';
   }
+  // ── v6.2.0 — autonomie totale mesurée le 29/07 (test de décharge, 48
+  // relevés) : 411 min depuis charge pleine, WiFi CONNECTÉ. C'est un
+  // PLANCHER — en plongée, radio éteinte, compte environ 1h de plus.
+  // Le pourcentage renvoyé par l'appareil EST la fraction de temps de
+  // fonctionnement restant (cf. batteryPercent dans GfredDream.ino), donc
+  // une simple multiplication suffit : pas de courbe à dupliquer ici, et
+  // donc aucun risque de désaccord entre le téléphone et l'écran.
+  const AUTONOMIE_MIN = 411;
   function renderBatt(dv){
     if (dv.byteLength < 1) return;
-    $('battVal').textContent = dv.getUint8(0) + '%';
+    const pct = dv.getUint8(0);
+    $('battVal').textContent = pct + '%';
+    // Mêmes seuils que drawE4Frame() : 50 / 25 / 10.
+    $('battVal').style.color =
+      pct >= 50 ? '#3ec46d' : pct >= 25 ? '#e8d44d' :
+      pct >= 10 ? '#e8a33d' : '#e03e3e';
+    const rem = Math.round(AUTONOMIE_MIN * pct / 100);
+    $('battLbl').textContent = rem >= 60
+      ? 'Batterie · ' + Math.floor(rem/60) + ' h ' + String(rem%60).padStart(2,'0')
+      : 'Batterie · ' + rem + ' min';
     if (dv.byteLength >= 3) {
       const volts = dv.getUint16(1, true) / 100;
       $('battVoltVal').textContent = volts.toFixed(2) + 'V';
