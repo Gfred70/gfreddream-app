@@ -125,6 +125,8 @@
   .led-minus,.led-plus{min-width:44px;min-height:44px;}
   .hudtest-btn{width:100%;margin-top:8px;}
   .hudtest-btn.on{background:var(--brass);color:#1a1a1a;}
+  .sleep-btn{width:100%;}
+  .sleep-btn.arm{background:var(--danger);color:#fff;}
   /* ── Session (v6.1.0) ──────────────────────────────────*/
   .sess-row{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;
             border-bottom:1px solid rgba(255,255,255,.06);}
@@ -562,6 +564,18 @@
     </div>
 
     <div class="card">
+      <div class="ctrl-label" style="margin-bottom:10px;">Mise en veille</div>
+      <p class="hint" style="margin:0 0 12px;">Éteint l'appareil pour de bon (veille profonde).
+      Se déclenche tout seul sous 3,40 V pendant 60 s — protection si l'aimant tombe pendant
+      le stockage. Le réveil est automatique dès qu'il recharge sur le pad Qi ; l'aimant reste
+      prioritaire dans tous les cas.</p>
+      <button class="btn sleep-btn" id="sleepBtn" type="button">Mettre en veille maintenant</button>
+      <div class="stepper-hint" style="text-align:center;margin-top:6px;">
+        Double confirmation — l'écran s'éteint après 3 s
+      </div>
+    </div>
+
+    <div class="card">
       <div class="ctrl-label" style="margin-bottom:12px;">État de l'appareil</div>
       <div class="telem">
         <div class="telem-cell">
@@ -754,6 +768,7 @@
   const HUDRGB= '1234000f-0000-0000-0000-000000000000';   // v6.1.0 — 3×uint16, dixièmes de %
   const HUDTST= '12340010-0000-0000-0000-000000000000';   // v6.1.0 — 0x01 = test 5s
   const SESSN = '12340011-0000-0000-0000-000000000000';   // v6.1.0 — durée + Vmin/Vmax + frame
+  const SLEEP = '12340012-0000-0000-0000-000000000000';   // v6.3.0 — 0x5A = veille profonde
   const MBAR  = '1234000c-0000-0000-0000-000000000000';
   const CALTRIG = '1234000d-0000-0000-0000-000000000000';
   const CALHIST = '1234000e-0000-0000-0000-000000000000';
@@ -831,6 +846,7 @@
       try { chars.hudrgb = await service.getCharacteristic(HUDRGB); } catch(e){ chars.hudrgb = null; }
       try { chars.hudtst = await service.getCharacteristic(HUDTST); } catch(e){ chars.hudtst = null; }
       try { chars.sess   = await service.getCharacteristic(SESSN);  } catch(e){ chars.sess   = null; }
+      try { chars.sleep  = await service.getCharacteristic(SLEEP);  } catch(e){ chars.sleep  = null; }
       chars.batt  = await service.getCharacteristic(BATT);
       chars.cell  = await service.getCharacteristic(CELL);
       chars.calib = await service.getCharacteristic(CALIB);
@@ -1179,6 +1195,33 @@
     paintLed(k);
     writeLeds();
   }
+  // ── v6.3.0 — veille profonde, double confirmation ─────────────────
+  // Un simple tap ne suffit pas : ce bouton éteint réellement l'appareil,
+  // et le récupérer demande le pad Qi ou l'aimant.
+  let sleepArmed = false, sleepTimer = null;
+  $('sleepBtn').addEventListener('click', async () => {
+    const b = $('sleepBtn');
+    if (!chars.sleep) return;
+    if (!sleepArmed) {
+      sleepArmed = true;
+      b.classList.add('arm');
+      b.textContent = 'Confirmer la mise en veille';
+      sleepTimer = setTimeout(() => {
+        sleepArmed = false; b.classList.remove('arm');
+        b.textContent = 'Mettre en veille maintenant';
+      }, 5000);
+      return;
+    }
+    clearTimeout(sleepTimer);
+    sleepArmed = false; b.classList.remove('arm');
+    try {
+      await chars.sleep.writeValue(Uint8Array.of(0x5A));
+      b.textContent = 'Mise en veille…';
+    } catch(e) {
+      b.textContent = 'Mettre en veille maintenant';
+    }
+  });
+
   $('hudTestBtn').addEventListener('click', async () => {
     if (!chars.hudtst) return;
     const b = $('hudTestBtn');
