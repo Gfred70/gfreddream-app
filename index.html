@@ -558,6 +558,8 @@
       <div class="sess-row"><span>Tension mini vue</span><span id="sessVmin">—</span></div>
       <div class="sess-row"><span>Tension maxi vue</span><span id="sessVmax">—</span></div>
       <div class="sess-row"><span>Temps de frame</span><span id="sessFrame">—</span></div>
+      <div class="sess-row"><span>Tâche capteurs</span><span id="sessTick">—</span></div>
+      <div class="sess-row"><span>Lectures cellule</span><span id="sessRead">—</span></div>
       <p class="hint" style="margin:12px 0 0;">Repart de zéro à chaque coupure. À lire au retour
       à la voiture : c'est la durée réelle sous tension, celle qu'aucun test de banc ne donne.
       Budget de frame 41 ms — au-delà, le FPS descend seul.</p>
@@ -746,7 +748,7 @@
 <footer>
     <p class="footer-note">Bluetooth : fonctionne dans Chrome (Android/desktop). Safari et iOS ne supportent pas Web Bluetooth.</p>
     <p class="footer-note">Cellules/chaux/batteries : stockées uniquement dans ce navigateur (localStorage) — changer de téléphone ou vider les données du site les efface.</p>
-    <p class="footer-version">Firmware GfredDream v6.4.0 · PWA v6.3 — mise a jour du 9 aout 2026</p>
+    <p class="footer-version">Firmware GfredDream v6.5.0 · PWA v6.4 — mise a jour du 9 aout 2026</p>
   </footer>
 
   
@@ -984,6 +986,17 @@
     $('sessFrame').textContent = fr > 0 ? fr.toFixed(1) + ' ms' : '—';
     // Budget de frame = 41 ms. Au-delà, le FPS descend tout seul.
     $('sessFrame').style.color = (fr > 41) ? '#e8a33d' : '';
+    // v6.5.0 — cadences réelles de la tâche du cœur 0. Attendu : ~100 Hz
+    // pour le tick (10 ms) et ~25 Hz par cellule (4 ticks par cycle C1→C2).
+    // Si ces chiffres s'effondrent, la tâche est affamée ou morte — c'est
+    // exactement le défaut qu'on vient de corriger, rendu visible.
+    if (dv.byteLength >= 14) {
+      const thz = dv.getUint16(10, true), rhz = dv.getUint16(12, true);
+      $('sessTick').textContent = thz + ' Hz';
+      $('sessRead').textContent = rhz + ' Hz';
+      $('sessTick').style.color = (thz >= 80) ? '#3ec46d' : '#e03e3e';
+      $('sessRead').style.color = (rhz >= 18) ? '#3ec46d' : '#e03e3e';
+    }
   }
   // ── v6.2.0 — autonomie totale mesurée le 29/07 (test de décharge, 48
   // relevés) : 411 min depuis charge pleine, WiFi CONNECTÉ. C'est un
