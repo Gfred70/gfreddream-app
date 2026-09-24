@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Parc cellules O2 — GfredDream</title>
+<link rel="icon" type="image/x-icon" href="fred_diving.ico">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0A1620">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="checklist.css">
+<style>
+  /* ── Bandeau d'action ─────────────────────────────────────────── */
+  .action-card{
+    border:1px solid var(--line); border-radius:14px; background:var(--panel);
+    padding:16px 18px; margin-bottom:18px; border-left:4px solid var(--o2green);
+  }
+  .action-card.warn  { border-left-color:var(--warn); }
+  .action-card.danger{ border-left-color:var(--danger); }
+  .action-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;}
+  .action-title{font-size:15px;font-weight:600;color:var(--mist);}
+  .action-when{font-family:var(--mono);font-size:13px;color:var(--o2green);}
+  .action-card.warn   .action-when{color:var(--warn);}
+  .action-card.danger .action-when{color:var(--danger);}
+  .action-steps{margin:12px 0 0;padding:0;list-style:none;}
+  .action-steps li{
+    font-size:13px;line-height:1.6;color:var(--mist-dim);
+    padding-left:16px;position:relative;
+  }
+  .action-steps li::before{content:'·';position:absolute;left:4px;color:var(--brass);}
+  .action-steps b{color:var(--mist);font-weight:600;}
+
+  /* ── Blocs de positions ───────────────────────────────────────── */
+  .grp-title{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--brass);margin:22px 0 10px;
+  }
+  .cellrow{
+    border:1px solid var(--line);border-radius:12px;background:var(--panel);
+    padding:13px 15px;margin-bottom:10px;
+  }
+  .cellrow-head{display:flex;align-items:center;gap:10px;}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--o2green);}
+  .dot.warn{background:var(--warn);} .dot.danger{background:var(--danger);}
+  .pos{font-weight:600;font-size:13.5px;flex:1;}
+  .age{font-family:var(--mono);font-size:12.5px;color:var(--mist-dim);}
+  .cellrow-body{display:flex;gap:10px;align-items:center;margin-top:9px;flex-wrap:wrap;}
+  .cellrow-body input[type=date]{flex:1;min-width:140px;}
+  .note-field{
+    width:100%;margin-top:8px;background:var(--panel2);color:var(--mist);
+    border:1px solid var(--line);border-radius:8px;padding:7px 10px;
+    font-family:var(--disp);font-size:12.5px;
+  }
+  .note-field::placeholder{color:var(--mist-dim);}
+  .bar{height:5px;border-radius:3px;background:var(--line);overflow:hidden;flex:1;min-width:90px;}
+  .bar span{display:block;height:100%;background:var(--o2green);border-radius:3px;}
+  .bar span.warn{background:var(--warn);} .bar span.danger{background:var(--danger);}
+
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+  .act{
+    flex:1;min-width:150px;padding:12px 14px;border-radius:10px;cursor:pointer;
+    border:1px solid var(--brass-dim);background:rgba(201,151,90,.10);
+    color:var(--brass);font-family:var(--disp);font-size:13.5px;font-weight:600;
+  }
+  .act.sub{border-color:var(--line);background:transparent;color:var(--mist-dim);font-weight:500;}
+  .act:active{transform:scale(.99);}
+
+  dialog{
+    border:1px solid var(--line);border-radius:14px;background:var(--panel);
+    color:var(--mist);max-width:420px;width:calc(100% - 36px);padding:20px;
+  }
+  dialog::backdrop{background:rgba(5,12,18,.75);}
+  dialog h3{margin:0 0 10px;font-size:15px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="headrow">
+    <div class="brand">
+      <img src="fred_diving.png" alt="GfredDream" width="32" height="32" style="border-radius:8px;display:block;flex:none;">
+      <span>
+        <span class="brand-text">GFREDDREAM</span>
+        <span class="brand-sub">parc cellules</span>
+      </span>
+    </div>
+    <a class="back-btn" href="index.html">← Accueil</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="page-hero">
+    <div class="eyebrow">Suivi du parc O2</div>
+    <h1>Parc cellules O2</h1>
+    <p class="page-hint">Une cellule neuve tous les 6 mois en position SW&nbsp;1. La sortante du Shearwater descend vers le rEvodream, celle du rEvodream part au rebut. Tout est stocké sur ce téléphone — aucun lien avec l'appareil.</p>
+  </div>
+
+  <!-- Bandeau d'action -->
+  <div class="action-card" id="actionCard">
+    <div class="action-head">
+      <span class="action-title" id="actTitle">—</span>
+      <span class="action-when" id="actWhen"></span>
+    </div>
+    <ul class="action-steps" id="actSteps"></ul>
+  </div>
+
+  <div class="grp-title">Shearwater — contrôleur</div>
+  <div id="grpSW"></div>
+
+  <div class="grp-title">rEvodream — affichage indépendant</div>
+  <div id="grpRD"></div>
+
+  <div class="btn-row">
+    <button class="act" id="rotBtn">Effectuer la rotation</button>
+  </div>
+  <div class="btn-row">
+    <button class="act sub" id="expBtn">Exporter</button>
+    <button class="act sub" id="impBtn">Importer</button>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <p class="lead" style="margin:0;">Le test à <b>1,60&nbsp;bar</b> reste sur la page d'accueil : quand tu en testes une, tu les testes toutes. C'est le seul contrôle qui révèle une limitation de courant — une cellule peut se comporter normalement à l'air et plafonner en haut.</p>
+  </div>
+
+</div>
+
+<dialog id="rotDlg">
+  <h3>Effectuer la rotation</h3>
+  <div id="rotBody" style="font-size:13px;line-height:1.6;color:var(--mist-dim);"></div>
+  <div style="margin-top:14px;">
+    <span class="field-lbl" style="font-size:11px;color:var(--mist-dim);display:block;margin-bottom:5px;">Date de pose de la cellule neuve</span>
+    <input type="date" id="rotDate" class="date-field" style="width:100%;">
+  </div>
+  <div class="btn-row" style="margin-top:16px;">
+    <button class="act sub" id="rotCancel">Annuler</button>
+    <button class="act" id="rotOk">Confirmer</button>
+  </div>
+</dialog>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const KEY = 'gfd_cells_park';
+
+  // Cycle : neuve tous les 6 mois. 3 positions SW (18 mois) puis
+  // 2 positions rEvodream (12 mois de plus) = 30 mois de vie totale.
+  const ROT_MONTHS = 6;
+  const MAX_MONTHS = 30;
+
+  // Pré-rempli avec le parc réel de Fred (relevé du 13/09/2026).
+  // L'ordre du tableau EST l'ordre de la cascade : index 0 = SW 1.
+  const DEFAULT = [
+    { pos:'SW 1',   date:'2025-03-22', note:'' },
+    { pos:'SW 2',   date:'2025-10-04', note:'' },
+    { pos:'SW 3',   date:'2026-06-18', note:'' },
+    { pos:'rEvo 4', date:'2025-12-07', note:'achetée neuve pour le rEvodream (hors cascade)' },
+    { pos:'rEvo 5', date:'2022-08-01', note:'' }
+  ];
+
+  let park = load();
+
+  function load(){
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (Array.isArray(p) && p.length === 5) return p;
+      }
+    } catch(e){ /* stockage illisible : on repart du parc par défaut */ }
+    return JSON.parse(JSON.stringify(DEFAULT));
+  }
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(park)); } catch(e){} }
+
+  // Âge en mois pleins — plus parlant que des jours pour un cycle de 6 mois.
+  function months(dateStr){
+    if (!dateStr) return null;
+    const d = new Date(dateStr + 'T00:00:00'), n = new Date();
+    let m = (n.getFullYear()-d.getFullYear())*12 + (n.getMonth()-d.getMonth());
+    if (n.getDate() < d.getDate()) m--;
+    return Math.max(0, m);
+  }
+  function addMonths(dateStr, k){
+    const d = new Date(dateStr + 'T00:00:00');
+    d.setMonth(d.getMonth() + k);
+    return d;
+  }
+  const fr = d => d.toLocaleDateString('fr-BE', {day:'2-digit', month:'2-digit', year:'numeric'});
+
+  // La date de référence de la rotation est celle de la cellule la PLUS
+  // RÉCEMMENT posée, pas celle de SW 1 : un remplacement hors cycle (la
+  // cellule noyée de 2025) remet légitimement le compteur à zéro.
+  function lastPosed(){
+    const dates = park.map(c => c.date).filter(Boolean).sort();
+    return dates.length ? dates[dates.length-1] : null;
+  }
+
+  function renderAction(){
+    const card = $('actionCard'), last = lastPosed();
+    if (!last){
+      card.className = 'action-card';
+      $('actTitle').textContent = 'Aucune date encodée';
+      $('actWhen').textContent = '';
+      $('actSteps').innerHTML = '';
+      return;
+    }
+    const due = addMonths(last, ROT_MONTHS);
+    const daysLeft = Math.ceil((due - new Date())/86400000);
+
+    let cls = '', when;
+    if (daysLeft < -60)     { cls = 'danger'; when = 'en retard de ' + Math.floor(-daysLeft/30) + ' mois'; }
+    else if (daysLeft < 0)  { cls = 'warn';   when = 'en retard de ' + (-daysLeft) + ' j'; }
+    else if (daysLeft <= 30){ cls = 'warn';   when = 'dans ' + daysLeft + ' j'; }
+    else                    { when = 'dans ' + Math.round(daysLeft/30) + ' mois'; }
+
+    card.className = 'action-card' + (cls ? ' ' + cls : '');
+    $('actTitle').textContent = 'Prochaine rotation : ' + fr(due);
+    $('actWhen').textContent  = when;
+
+    const out = park[2], down = park[4];   // SW 3 sort, rEvo 5 part au rebut
+    const ageOut  = months(out.date),  ageDown = months(down.date);
+    $('actSteps').innerHTML =
+      '<li>Neuve → <b>SW 1</b></li>' +
+      '<li><b>' + out.pos + '</b> (' + (ageOut===null?'?':ageOut+' mois') + ') → <b>rEvo 5</b></li>' +
+      '<li><b>' + down.pos + '</b> (' + (ageDown===null?'?':ageDown+' mois') + ') → <b>rebut</b></li>';
+  }
+
+  function renderRows(){
+    const sw = [], rd = [];
+    park.forEach((c, i) => {
+      const age = months(c.date);
+      // La pastille signale le dépassement de durée de vie TOTALE, pas
+      // l'âge en soi : 17 mois en SW 1 est parfaitement normal la veille
+      // d'une sortie. Seul le dépassement des 30 mois doit alerter.
+      let cls = '';
+      if (age !== null){
+        if (age >= MAX_MONTHS)          cls = 'danger';
+        else if (age >= MAX_MONTHS - 6) cls = 'warn';
+      }
+      const pct = age === null ? 0 : Math.min(100, age / MAX_MONTHS * 100);
+      const html =
+        '<div class="cellrow">' +
+          '<div class="cellrow-head">' +
+            '<span class="dot ' + cls + '"></span>' +
+            '<span class="pos">' + c.pos + '</span>' +
+            '<span class="age">' + (age===null ? '—' : age + ' mois') + '</span>' +
+          '</div>' +
+          '<div class="cellrow-body">' +
+            '<input type="date" class="date-field" data-i="' + i + '" data-f="date" value="' + (c.date||'') + '">' +
+            '<div class="bar"><span class="' + cls + '" style="width:' + pct + '%"></span></div>' +
+          '</div>' +
+          '<input type="text" class="note-field" data-i="' + i + '" data-f="note" ' +
+                 'placeholder="Note libre — ex. remplacée suite à noyade" value="' +
+                 String(c.note||'').replace(/"/g,'&quot;') + '">' +
+        '</div>';
+      (i < 3 ? sw : rd).push(html);
+    });
+    $('grpSW').innerHTML = sw.join('');
+    $('grpRD').innerHTML = rd.join('');
+
+    document.querySelectorAll('[data-f]').forEach(el => {
+      el.addEventListener('change', e => {
+        const i = +e.target.dataset.i, f = e.target.dataset.f;
+        park[i][f] = e.target.value;
+        save(); render();
+      });
+    });
+  }
+
+  function render(){ renderAction(); renderRows(); }
+
+  // ── Rotation ──────────────────────────────────────────────────────
+  $('rotBtn').addEventListener('click', () => {
+    const out = park[2], down = park[4];
+    $('rotBody').innerHTML =
+      'La cascade va décaler toutes les positions :<br><br>' +
+      '· Neuve → <b>SW 1</b><br>' +
+      '· SW 1 → SW 2 · SW 2 → SW 3<br>' +
+      '· <b>' + out.pos + '</b> (' + out.date + ') → <b>rEvo 4</b><br>' +
+      '· rEvo 4 → <b>rEvo 5</b><br>' +
+      '· <b>' + down.pos + '</b> (' + down.date + ') → <b style="color:var(--danger)">rebut</b>';
+    $('rotDate').value = new Date().toISOString().slice(0,10);
+    $('rotDlg').showModal();
+  });
+  $('rotCancel').addEventListener('click', () => $('rotDlg').close());
+  $('rotOk').addEventListener('click', () => {
+    const d = $('rotDate').value;
+    if (!d) return;
+    // Décalage en cascade : la dernière sort, une neuve entre en tête.
+    // Les notes suivent leur cellule — c'est tout l'intérêt de les garder.
+    const moved = park.slice(0, 4).map((c, i) => ({ pos: park[i+1].pos, date: c.date, note: c.note }));
+    park = [{ pos:'SW 1', date:d, note:'' }].concat(moved);
+    park.forEach((c, i) => { c.pos = DEFAULT[i].pos; });
+    save(); render();
+    $('rotDlg').close();
+  });
+
+  // ── Export / import ───────────────────────────────────────────────
+  $('expBtn').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(park, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'gfreddream-cellules-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  });
+  $('impBtn').addEventListener('click', () => {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'application/json';
+    inp.addEventListener('change', () => {
+      const f = inp.files && inp.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = () => {
+        try {
+          const p = JSON.parse(r.result);
+          if (Array.isArray(p) && p.length === 5) { park = p; save(); render(); }
+          else alert('Fichier invalide : 5 positions attendues.');
+        } catch(e){ alert('Fichier illisible.'); }
+      };
+      r.readAsText(f);
+    });
+    inp.click();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

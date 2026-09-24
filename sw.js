@@ -12,7 +12,7 @@
 // CACHE_NAME (v1 → v2) pour forcer un cache propre chez tous les appareils
 // déjà installés ; sinon les anciens caches ne se videraient jamais.
 
-const CACHE_NAME = 'gfreddream-v5';
+const CACHE_NAME = 'gfreddream-v6';
 
 const PRECACHE_URLS = [
   './',
@@ -25,6 +25,7 @@ const PRECACHE_URLS = [
   'rechappe.html',
   'procedure-revodream.html',
   'procedure-gfreddream.html',
+  'cellules.html',
   'manifest.json',
   'fred_diving.ico',
   'fred_diving.png',
