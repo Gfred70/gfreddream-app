@@ -572,6 +572,7 @@
       <div class="sess-row"><span>Temps de frame</span><span id="sessFrame">—</span></div>
       <div class="sess-row"><span>Tâche capteurs</span><span id="sessTick">—</span></div>
       <div class="sess-row"><span>Lectures cellule</span><span id="sessRead">—</span></div>
+      <div class="sess-row"><span>Dernier redémarrage</span><span id="sessReset">—</span></div>
       <p class="hint" style="margin:12px 0 0;">Repart de zéro à chaque coupure. À lire au retour
       à la voiture : c'est la durée réelle sous tension, celle qu'aucun test de banc ne donne.
       Budget de frame 41 ms — au-delà, le FPS descend seul.</p>
@@ -765,7 +766,7 @@
 <footer>
     <p class="footer-note">Bluetooth : fonctionne dans Chrome (Android/desktop). Safari et iOS ne supportent pas Web Bluetooth.</p>
     <p class="footer-note">Cellules/chaux/batteries : stockées uniquement dans ce navigateur (localStorage) — changer de téléphone ou vider les données du site les efface.</p>
-    <p class="footer-version">Firmware GfredDream v6.5.0 · PWA v6.5 — mise a jour du 23 septembre 2026</p>
+    <p class="footer-version">Firmware GfredDream v6.6.0 · PWA v6.6 — mise a jour du 23 septembre 2026</p>
   </footer>
 
   
@@ -1013,6 +1014,24 @@
       $('sessRead').textContent = rhz + ' Hz';
       $('sessTick').style.color = (thz >= 80) ? '#3ec46d' : '#e03e3e';
       $('sessRead').style.color = (rhz >= 18) ? '#3ec46d' : '#e03e3e';
+    }
+    // v6.6.0 — cause du dernier reset. Au second boot d'un double
+    // démarrage, cet octet dit ce qui a tué le premier.
+    if (dv.byteLength >= 15) {
+      const R = {
+        1:['Démarrage', ''],
+        3:['Reboot logiciel', ''],
+        4:['Chien de garde', '#e8a33d'],
+        5:['Veille profonde', ''],
+        6:['Chien de garde', '#e8a33d'],
+        7:['Tâche bloquée', '#e8a33d'],
+        8:['Panique', '#e03e3e'],
+        9:['Brownout', '#e03e3e'],
+        10:['Coupure alim', '#e8a33d']
+      };
+      const r = R[dv.getUint8(14)] || ['—', ''];
+      $('sessReset').textContent = r[0];
+      $('sessReset').style.color = r[1];
     }
   }
   // ── v6.2.0 — autonomie totale mesurée le 29/07 (test de décharge, 48
